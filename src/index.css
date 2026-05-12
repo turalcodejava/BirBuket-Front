@@ -1,0 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-primary: #13ec5b;
+  --color-background-light: #ffffff;
+  --color-background-dark: #050a06; 
+  --color-floral-deep: #0d1b12;
+  --color-floral-muted: #4c9a66;
+  --color-floral-deep-dark: #f0f7f2;
+  --color-floral-muted-dark: #96c2a6;
+
+  --radius-lg: 2rem;
+  --radius-xl: 3rem;
+  --radius-2xl: 1rem; /* Sleek theme uses 16px for buttons */
+}
+
+/* Enable class-based dark mode in Tailwind 4 */
+@variant dark (&:where(.dark, .dark *));
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined', sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  font-variation-settings: 'FILL' 0;
+  letter-spacing: normal;
+  display: inline-block;
+  vertical-align: middle;
+  white-space: nowrap;
+  direction: ltr;
+  font-size: inherit;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+/** Canlı kuryer trayektoriya xətti animasiyası (Leaflet SVG) */
+.bb-courier-route-polyline.bb-courier-route-polyline--live .leaflet-interactive {
+  stroke-dasharray: 10 36;
+  animation: bb-courier-route-flow 2.1s linear infinite;
+}
+
+@keyframes bb-courier-route-flow {
+  to {
+    stroke-dashoffset: -92;
+  }
+}
+
+.bb-tracking-div-icon.leaflet-div-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.bb-courier-ship-wrap {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+}
+
+.bb-courier-ship-ring {
+  position: absolute;
+  inset: -2px;
+  border-radius: 9999px;
+  background: rgba(212, 17, 82, 0.35);
+  animation: bb-courier-ship-ping 1.65s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes bb-courier-ship-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  85% {
+    transform: scale(2.05);
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.bb-courier-ship-core {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #d41152 0%, #881337 98%);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(212, 17, 82, 0.45), 0 0 0 2px rgba(255, 255, 255, 0.12);
+}
+
+.bb-courier-ship-glyph {
+  font-family: 'Material Symbols Outlined', sans-serif !important;
+  font-variation-settings: 'FILL' 1 !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+}
+
+.bb-delivery-home-wrap {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+}
+
+.bb-delivery-home-core {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #059669 0%, #064e3b 98%);
+  color: #ecfdf5;
+  box-shadow: 0 8px 20px rgba(5, 150, 105, 0.42), 0 0 0 2px rgba(255, 255, 255, 0.14);
+}
+
+.bb-delivery-home-glyph {
+  font-family: 'Material Symbols Outlined', sans-serif !important;
+  font-variation-settings: 'FILL' 1 !important;
+  font-size: 26px !important;
+  line-height: 1 !important;
+}
+
+@layer base {
+  html {
+    @apply bg-white dark:bg-background-dark text-floral-deep dark:text-floral-deep-dark;
+  }
+  body {
+    @apply font-display antialiased transition-colors duration-300;
+  }
+  
+  .product-card:hover .quick-add {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
