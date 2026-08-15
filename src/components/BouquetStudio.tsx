@@ -18,7 +18,6 @@ import {
   X
 } from 'lucide-react';
 import type { FlowerType, SelectedFlower, BouquetConfiguration, Product, APIProduct, ProductVariant } from '../types';
-import { getBouquetAnalysis, generateBouquetImage } from '../services/geminiService';
 import { authService, checkoutService, plantDoctorService, productService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -458,26 +457,36 @@ export default function BouquetStudio() {
         setRenderProgress(Math.floor(current));
       }, 100);
 
-      const [imageResult, analysisResult] = await Promise.allSettled([
-        withTimeout(generateBouquetImage(config), 22000, null as string | null),
-        withTimeout(getBouquetAnalysis(config), 14000, defaultAnalysis)
-      ]);
-
-      if (imageResult.status === 'fulfilled' && imageResult.value) {
-        const resolvedImage = await resolveRenderableImage(imageResult.value);
-        setPreloadedImage(resolvedImage || hardFallbackImage);
-      } else {
+      try {
+        const response = await authService.renderBouquet(config);
+        
+        if (response && response.imageUrl) {
+          const resolvedImage = await resolveRenderableImage(response.imageUrl);
+          setPreloadedImage(resolvedImage || hardFallbackImage);
+        } else {
+          setPreloadedImage(hardFallbackImage);
+        }
+        
+        if (response && response.title) {
+          setAnalysis({
+            title: response.title,
+            description: response.description || defaultAnalysis.description
+          });
+        } else {
+          setAnalysis(defaultAnalysis);
+        }
+      } catch (err: any) {
+        console.error("Backend rendering failed:", err);
+        
+        if (err.response?.status === 403) {
+          alert("Pulsuz render limitiniz (5 ədəd) tükənib. Davam etmək üçün zəhmət olmasa abunə olun.");
+        } else {
+          alert("Render zamanı xəta baş verdi.");
+        }
+        
         setPreloadedImage(hardFallbackImage);
-      }
-
-      if (analysisResult.status === 'fulfilled' && analysisResult.value) {
-        setAnalysis(analysisResult.value);
-      } else {
         setAnalysis(defaultAnalysis);
       }
-    } catch {
-      setPreloadedImage(hardFallbackImage);
-      setAnalysis(defaultAnalysis);
     } finally {
       if (renderIntervalRef.current) clearInterval(renderIntervalRef.current);
       setRenderProgress(100);

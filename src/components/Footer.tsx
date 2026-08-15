@@ -155,8 +155,8 @@ export default function Footer() {
         <div className="pt-8 border-t border-black/5 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-[#4c9a66] opacity-60 text-xs">© 2024 BirBuket. Bütün hüquqlar qorunur.</p>
           <div className="flex gap-8 text-xs text-[#4c9a66] font-medium">
-            <a className="hover:text-primary transition-colors" href="#">Məxfilik siyasəti</a>
-            <a className="hover:text-primary transition-colors" href="#">İstifadə şərtləri</a>
+            <Link className="hover:text-primary transition-colors" to="/privacy">Məxfilik siyasəti</Link>
+            <Link className="hover:text-primary transition-colors" to="/terms">İstifadə şərtləri</Link>
           </div>
         </div>
       </div>

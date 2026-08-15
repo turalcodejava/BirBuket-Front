@@ -46,7 +46,7 @@ type CourierHandoverForm = {
   courierCarModel: string;
 };
 
-const API_BASE = String(import.meta.env.VITE_API_BASE_URL || '').trim();
+const API_BASE = String(process.env.NEXT_PUBLIC_API_BASE_URL || '').trim();
 const API_ORIGIN = (() => {
   if (!API_BASE) return '';
   try {
@@ -352,7 +352,7 @@ export default function FloristPanel() {
     try {
       const res = await floristService.getAllOrders();
       const rows = extractOrderRows(res?.raw ?? res?.data ?? res);
-      if (import.meta.env.DEV) {
+      if (process.env.NODE_ENV !== 'production') {
         console.debug('[florist panel] fetched orders rows:', rows.length, res);
       }
       const parsed = rows.map(parseOrder).filter((x) => x.id > 0);
@@ -543,7 +543,7 @@ export default function FloristPanel() {
       order?.floristAddress ||
       order?.shopAddress ||
       '';
-    const envPickup = String(import.meta.env.VITE_TRACKING_DEFAULT_PICKUP_ADDRESS || '').trim();
+    const envPickup = String(process.env.NEXT_PUBLIC_TRACKING_DEFAULT_PICKUP_ADDRESS || '').trim();
     const courierPanelLink = await makeCourierLink({
       orderId,
       orderNumber: order?.orderNumber,

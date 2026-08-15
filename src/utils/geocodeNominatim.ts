@@ -97,10 +97,7 @@ async function searchOnce(query: string, base: string): Promise<OsmHit[]> {
 }
 
 function nominatimBases(): string[] {
-  const custom =
-    typeof import.meta !== 'undefined' && import.meta.env?.VITE_NOMINATIM_BASE
-      ? String(import.meta.env.VITE_NOMINATIM_BASE).trim()
-      : '';
+  const custom = String(process.env.NEXT_PUBLIC_NOMINATIM_BASE || '').trim();
   const fallback = '/geo-nominatim';
   const pub = 'https://nominatim.openstreetmap.org';
   return [...new Set((custom ? [custom, pub] : [fallback, pub]).filter(Boolean))];

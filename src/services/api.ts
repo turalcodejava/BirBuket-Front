@@ -21,7 +21,7 @@ const resolvePlantDoctorAxiosTimeoutMs = () => {
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: apiBaseUrl,
-  timeout: 10000,
+  timeout: 30000,
   headers: {
     Accept: 'application/json',
   },
@@ -1259,7 +1259,15 @@ export const authService = {
     }
     throw lastError;
   },
-  checkoutSubscription: async (payload: { planCode: string }) => {
+  checkoutSubscription: async (payload: {
+    planCode: string;
+    style: string;
+    frequency: string;
+    recipientName: string;
+    recipientPhone: string;
+    deliveryAddress: string;
+    firstDeliveryDate: string;
+  }) => {
     const candidates = ['/api/auth/subscriptions/checkout', '/auth/subscriptions/checkout'];
     let lastError: any = null;
     for (const endpoint of candidates) {
@@ -1305,6 +1313,12 @@ export const authService = {
     }
 
     throw new Error('Profil yeniləmə endpointi tapılmadı');
+  },
+  renderBouquet: async (config: any) => {
+    const response = await apiClient.post('/api/bouquet/render', config, {
+      headers: getAuthHeaders()
+    });
+    return response.data?.data ?? response.data;
   }
 };
 

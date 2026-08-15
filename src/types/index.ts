@@ -137,6 +137,7 @@ export interface CartItem {
   size?: string;
   variantName?: string;
   product?: {
+    image?: string;
     productImageUrl?: string;
     imageUrl?: string;
     productName?: string;

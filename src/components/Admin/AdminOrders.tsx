@@ -67,50 +67,12 @@ const normalizeStatus = (raw: unknown): string => {
 const statusLabel = (status: string): string => {
   const s = normalizeStatus(status);
   if (s.includes('DELIVERED') || s.includes('COMPLETED')) return 'Çatdırılıb';
-  if (
-    s.includes('WITH_COURIER') ||
-    s.includes('COURIER') ||
-    s.includes('ON_THE_WAY') ||
-    s.includes('IN_DELIVERY') ||
-    s.includes('OUT_FOR_DELIVERY')
-  )
-    return 'Kuryerdə';
+  if (s.includes('WITH_COURIER') || s.includes('ON_THE_WAY') || s.includes('IN_DELIVERY')) return 'Kuryerdə';
   if (s.includes('READY') || s.includes('PREPARED')) return 'Hazır';
-  if (s.includes('PREPARING') || s.includes('PREPEAR')) return 'Hazırlanır';
-  if (s.includes('PENDING') || s.includes('NEW') || s.includes('AWAIT')) return 'Gözləmədə';
+  if (s.includes('PREPARING')) return 'Hazırlanır';
+  if (s.includes('PENDING') || s.includes('NEW')) return 'Gözləmədə';
   if (s.includes('CANCEL') || s.includes('REJECT')) return 'Ləğv edilib';
   return s;
-};
-
-const statusBadgeClass = (status: string): string => {
-  const s = normalizeStatus(status);
-  const isPreparingOnly = (s.includes('PREPARING') || s.includes('PREPEAR')) && !s.includes('PREPARED');
-
-  if (s.includes('DELIVERED') || s.includes('COMPLETED')) {
-    return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300';
-  }
-  if (s.includes('CANCEL') || s.includes('REJECT')) {
-    return 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300';
-  }
-  if (
-    s.includes('WITH_COURIER') ||
-    (s.includes('COURIER') && !isPreparingOnly && !s.includes('PENDING')) ||
-    s.includes('ON_THE_WAY') ||
-    s.includes('IN_DELIVERY') ||
-    s.includes('OUT_FOR_DELIVERY')
-  ) {
-    return 'bg-sky-100 text-sky-800 ring-1 ring-sky-200 dark:bg-sky-500/20 dark:text-sky-200 dark:ring-sky-500/30';
-  }
-  if (isPreparingOnly || (s.includes('PREPARATION') && !s.includes('PREPARED'))) {
-    return 'bg-orange-100 text-orange-800 ring-1 ring-orange-200 dark:bg-orange-500/25 dark:text-orange-200 dark:ring-orange-500/35';
-  }
-  if (s.includes('READY') || s.includes('PREPARED')) {
-    return 'bg-amber-100 text-amber-800 ring-1 ring-amber-200 dark:bg-amber-500/20 dark:text-amber-200 dark:ring-amber-500/30';
-  }
-  if (s.includes('PENDING') || s.includes('NEW') || s.includes('AWAIT')) {
-    return 'bg-violet-100 text-violet-800 ring-1 ring-violet-200 dark:bg-violet-500/20 dark:text-violet-200 dark:ring-violet-500/30';
-  }
-  return 'bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-white/80';
 };
 
 const parseOrder = (raw: any): AdminOrder => {
@@ -324,7 +286,7 @@ export default function AdminOrders() {
                     <td className="border-y border-slate-200/80 bg-white px-3 py-3 dark:border-white/10 dark:bg-white/[0.02]">{order.customerPhone || '-'}</td>
                     <td className="border-y border-slate-200/80 bg-white px-3 py-3 dark:border-white/10 dark:bg-white/[0.02]">{order.address || '-'}</td>
                     <td className="border-y border-slate-200/80 bg-white px-3 py-3 dark:border-white/10 dark:bg-white/[0.02]">
-                      <div className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold ${statusBadgeClass(order.status)}`}>
+                      <div className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-700 dark:bg-white/10 dark:text-white/80">
                         {statusLabel(order.status)}
                       </div>
                     </td>

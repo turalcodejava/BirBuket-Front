@@ -1,8 +1,6 @@
-/** Frontend-only token; `.env`-də `VITE_COURIER_TRACKING_SECRET` ilə production-da möhkəmləndirin */
+/** Frontend-only token; `.env`-də `NEXT_PUBLIC_COURIER_TRACKING_SECRET` ilə production-da möhkəmləndirin */
 const trackingSecret =
-  typeof import.meta !== 'undefined' && import.meta.env?.VITE_COURIER_TRACKING_SECRET
-    ? String(import.meta.env.VITE_COURIER_TRACKING_SECRET)
-    : 'birbuket-courier-tracking';
+  String(process.env.NEXT_PUBLIC_COURIER_TRACKING_SECRET || 'birbuket-courier-tracking');
 
 export const normalizePhoneDigits = (raw?: string) =>
   String(raw || '')

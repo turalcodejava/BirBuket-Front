@@ -1,10 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 import { BouquetConfiguration } from "../types";
 
-const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+const geminiApiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 const ai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null;
 const geminiImageModels = (
-  import.meta.env.VITE_GEMINI_IMAGE_MODELS ||
+  process.env.NEXT_PUBLIC_GEMINI_IMAGE_MODELS ||
   'gemini-2.5-flash-image,gemini-3.1-flash-image-preview'
 )
   .split(',')

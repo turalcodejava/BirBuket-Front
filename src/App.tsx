@@ -47,6 +47,8 @@ import CourierTrackingPage from './components/Courier/CourierTrackingPage';
 import CourierInvitePage from './components/Courier/CourierInvitePage';
 import SupportPage from './components/SupportPage';
 import BirBuketClub from './components/BirBuketClub';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsOfUse from './components/TermsOfUse';
 import { useAuth } from './context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import BrandLoading from './components/BrandLoading';
@@ -241,6 +243,8 @@ function AppContent() {
           <Route path="/about" element={<About />} />
           <Route path="/birbuketclub" element={<BirBuketClub />} />
           <Route path="/support" element={<SupportPage />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfUse />} />
           <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -19,7 +19,7 @@ import {
   type ProductVariantAdmin,
 } from '../../services/api';
 
-const API_BASE = String(import.meta.env.VITE_API_BASE_URL || '').trim();
+const API_BASE = String(process.env.NEXT_PUBLIC_API_BASE_URL || '').trim();
 const API_ORIGIN = (() => {
   if (!API_BASE) return '';
   try {
