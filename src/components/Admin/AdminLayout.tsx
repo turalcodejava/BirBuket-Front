@@ -1,4 +1,4 @@
-import { BarChart3, Boxes, ClipboardList, Home, LogOut, MessageCircle, Settings, Users } from 'lucide-react';
+import { BarChart3, Boxes, ClipboardList, Home, LogOut, MessageCircle, Settings, Users, Sparkles } from 'lucide-react';
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -9,6 +9,7 @@ const adminMenu = [
   { to: '/admin/products', label: 'Məhsullar', icon: Boxes },
   { to: '/admin/customers', label: 'Müştərilər', icon: Users },
   { to: '/admin/live-chat', label: 'Canlı söhbət', icon: MessageCircle },
+  { to: '/admin/render-management', label: 'Render Ayarları', icon: Sparkles },
   { to: '/admin/settings', label: 'Tənzimləmələr', icon: Settings },
 ];
 

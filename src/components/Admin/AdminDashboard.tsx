@@ -100,7 +100,7 @@ export default function AdminDashboard() {
               <span className="text-xs font-bold">Canlı Dəstək</span>
             </button>
             <button
-              onClick={() => navigate('/admin/settings')}
+              onClick={() => navigate('/admin/render-management')}
               className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-primary/10 transition-all text-center bg-white dark:bg-slate-900 shadow-sm hover:scale-[1.02]"
             >
               <Sparkles className="size-6 text-primary mb-2" />

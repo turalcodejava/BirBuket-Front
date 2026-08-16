@@ -40,6 +40,7 @@ import AdminProducts from './components/Admin/AdminProducts';
 import AdminCustomers from './components/Admin/AdminCustomers';
 import AdminSettings from './components/Admin/AdminSettings';
 import AdminLiveChat from './components/Admin/AdminLiveChat';
+import AdminRenderManagement from './components/Admin/AdminRenderManagement';
 import AgronomistPanel from './components/Agronomist/AgronomistPanel';
 import FloristPanel from './components/Florist/FloristPanel';
 import CourierPanel from './components/Courier/CourierPanel';
@@ -298,6 +299,7 @@ function AppContent() {
             <Route path="customers" element={<AdminCustomers />} />
             <Route path="live-chat" element={<AdminLiveChat />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="render-management" element={<AdminRenderManagement />} />
           </Route>
           <Route
             path="/agronomist"
