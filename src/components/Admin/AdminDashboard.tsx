@@ -1,5 +1,21 @@
-import { Bell, Download, DollarSign, Package, Search, Sparkles, TrendingDown, TrendingUp, WandSparkles } from 'lucide-react';
+import { 
+  Bell, 
+  Download, 
+  DollarSign, 
+  Package, 
+  Search, 
+  Sparkles, 
+  TrendingDown, 
+  TrendingUp, 
+  WandSparkles,
+  ClipboardList,
+  Boxes,
+  Users,
+  MessageCircle,
+  Settings
+} from 'lucide-react';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const stats = [
   { title: 'Ümumi gəlir', value: '12,450 AZN', icon: DollarSign, delta: '+12.5%', positive: true },
@@ -24,9 +40,11 @@ const topProducts = [
 ];
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
+
   return (
     <div className="relative isolate min-h-full min-h-[80vh] overflow-x-hidden bg-[#fdfcf0] dark:bg-background-dark p-6 lg:p-8">
-      <div className="pointer-events-none select-none space-y-6 opacity-[0.94] blur-md sm:blur-lg">
+      <div className="space-y-6 opacity-[0.94]">
         <header className="rounded-2xl border border-floral-muted/10 bg-white dark:bg-white/5 px-5 py-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-3xl font-black">Analitika və Hesabatlar</h2>
@@ -48,6 +66,55 @@ export default function AdminDashboard() {
             </button>
           </div>
         </header>
+
+        {/* Sürətli Keçidlər */}
+        <section className="rounded-2xl border border-floral-muted/10 bg-white dark:bg-white/5 p-6 shadow-sm">
+          <h3 className="text-base font-black mb-3">İdarəetmə Paneli Hızlı Keçidləri</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+            <button
+              onClick={() => navigate('/admin/orders')}
+              className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-primary/10 transition-all text-center bg-white dark:bg-slate-900 shadow-sm hover:scale-[1.02]"
+            >
+              <ClipboardList className="size-6 text-primary mb-2" />
+              <span className="text-xs font-bold">Sifarişlər</span>
+            </button>
+            <button
+              onClick={() => navigate('/admin/products')}
+              className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-primary/10 transition-all text-center bg-white dark:bg-slate-900 shadow-sm hover:scale-[1.02]"
+            >
+              <Boxes className="size-6 text-primary mb-2" />
+              <span className="text-xs font-bold">Məhsullar</span>
+            </button>
+            <button
+              onClick={() => navigate('/admin/customers')}
+              className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-primary/10 transition-all text-center bg-white dark:bg-slate-900 shadow-sm hover:scale-[1.02]"
+            >
+              <Users className="size-6 text-primary mb-2" />
+              <span className="text-xs font-bold">Müştərilər</span>
+            </button>
+            <button
+              onClick={() => navigate('/admin/live-chat')}
+              className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-primary/10 transition-all text-center bg-white dark:bg-slate-900 shadow-sm hover:scale-[1.02]"
+            >
+              <MessageCircle className="size-6 text-primary mb-2" />
+              <span className="text-xs font-bold">Canlı Dəstək</span>
+            </button>
+            <button
+              onClick={() => navigate('/admin/settings')}
+              className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-primary/10 transition-all text-center bg-white dark:bg-slate-900 shadow-sm hover:scale-[1.02]"
+            >
+              <Sparkles className="size-6 text-primary mb-2" />
+              <span className="text-xs font-bold">Render Ayarları</span>
+            </button>
+            <button
+              onClick={() => navigate('/admin/settings')}
+              className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-primary/10 transition-all text-center bg-white dark:bg-slate-900 shadow-sm hover:scale-[1.02]"
+            >
+              <Settings className="size-6 text-primary mb-2" />
+              <span className="text-xs font-bold">Tənzimləmələr</span>
+            </button>
+          </div>
+        </section>
 
         <section className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="flex gap-2 p-1 rounded-xl bg-white border border-floral-muted/10 dark:bg-white/5 dark:border-white/10 w-fit">
@@ -220,32 +287,6 @@ export default function AdminDashboard() {
             </table>
           </div>
         </section>
-      </div>
-
-      {/* Yan panel ~260px: overlay yalnız əsas sahəni örtür; fixed + yüksək z-index həmişə üstdə görünsün */}
-      <div
-        className="fixed inset-0 top-0 z-[500] flex items-center justify-center bg-slate-900/45 p-4 backdrop-blur-sm dark:bg-black/55 lg:inset-auto lg:left-[260px] lg:right-0 lg:top-0 lg:bottom-0"
-      >
-        <div
-          role="dialog"
-          aria-labelledby="dash-soon-title"
-          aria-describedby="dash-soon-desc"
-          className="relative z-[501] mx-auto max-w-[min(100%,380px)] rounded-3xl border-2 border-black/10 bg-white px-7 py-8 text-center shadow-2xl dark:border-white/25 dark:bg-slate-900"
-        >
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 dark:bg-primary/25 dark:text-primary">
-            <Sparkles className="h-7 w-7 shrink-0" aria-hidden />
-          </div>
-          <p id="dash-soon-title" className="text-2xl font-black tracking-tight text-neutral-900 dark:text-white">
-            Admin Dashboard
-          </p>
-          <p className="mt-3 text-base font-black uppercase tracking-[0.35em] text-emerald-600 dark:text-primary">
-            Coming Soon
-          </p>
-          <p className="mt-4 text-[15px] font-bold text-neutral-700 dark:text-white/85">Tezliklə aktiv olacaq.</p>
-          <p id="dash-soon-desc" className="mt-2 text-sm leading-relaxed text-neutral-600 dark:text-white/65">
-            Analitika və hesabat bölməsi üzərində iş gedir — hazır olan funksiyalar menyudan seçilə bilər.
-          </p>
-        </div>
       </div>
     </div>
   );
