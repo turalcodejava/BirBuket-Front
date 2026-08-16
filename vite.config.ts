@@ -5,7 +5,7 @@ import {defineConfig, loadEnv} from 'vite';
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
-  const backendUrl = env.BACKEND_URL || 'http://localhost:8081';
+  const backendUrl = env.BACKEND_URL || env.VITE_API_BASE_URL || 'http://localhost:8081';
   return {
     plugins: [react(), tailwindcss()],
     define: {
