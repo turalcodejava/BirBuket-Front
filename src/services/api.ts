@@ -11,7 +11,10 @@ import {
   Cart
 } from '../types';
 
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+const apiBaseUrl = 
+  import.meta.env.DEV 
+    ? '' 
+    : (import.meta.env.VITE_API_BASE_URL || '');
 
 /** `/api/plantdoctor` — siyahı sorğuları 10s-də tez-tez kəsilir; `.env`-də `VITE_PLANT_DOCTOR_TIMEOUT_MS` ilə artırıla bilər */
 const resolvePlantDoctorAxiosTimeoutMs = () => {
