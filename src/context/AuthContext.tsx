@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
 import { collectRoleStringsFromDecoded, decodeJwtPayload } from '../utils/jwtRoles';
+import { authService } from '../services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -161,10 +162,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    void authService.logout();
     localStorage.removeItem('token');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('access_token');
     localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem(AUTH_USER_STORAGE_KEY);
     localStorage.removeItem(AUTH_USER_ID_STORAGE_KEY);
     setToken(null);

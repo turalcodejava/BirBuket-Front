@@ -1407,6 +1407,18 @@ export const authService = {
       }
     }
     throw lastError;
+  },
+  logout: async () => {
+    try {
+      await apiClient.post('/api/auth/logout', null, { headers: getAuthHeaders() });
+    } catch {
+      // safe fallback
+    }
+  },
+  refresh: async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    const res = await apiClient.post<any>('/api/auth/refresh', { refreshToken });
+    return res.data?.data ?? res.data ?? null;
   }
 };
 
@@ -2226,11 +2238,11 @@ export const courierService = {
 export const adminService = {
   getAllOrders: async () => {
     const candidates = [
-      '/api/order/all/florist-view',
+      '/api/order',
+      '/api/order/all',
       '/api/order/all/admin-view',
       '/api/order/admin-view',
-      '/api/order/all',
-      '/api/order',
+      '/api/order/all/florist-view',
     ];
     let lastError: any = null;
     for (const endpoint of candidates) {
