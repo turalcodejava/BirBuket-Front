@@ -422,6 +422,10 @@ export default function BouquetStudio() {
   };
 
   const runRender = async () => {
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     if (status === 'RENDERING') return;
 
     const withTimeout = async <T,>(promise: Promise<T>, ms: number, fallback: T): Promise<T> => {
