@@ -1250,7 +1250,7 @@ export const authService = {
     );
   },
   getSubscriptionPlans: async () => {
-    const candidates = ['/api/auth/subscriptions/plans', '/auth/subscriptions/plans'];
+    const candidates = ['/api/auth/subscriptions/plans'];
     let lastError: any = null;
     for (const endpoint of candidates) {
       try {
@@ -1263,7 +1263,7 @@ export const authService = {
     throw lastError;
   },
   getClubSettings: async () => {
-    const candidates = ['/api/auth/subscriptions/settings', '/auth/subscriptions/settings'];
+    const candidates = ['/api/auth/subscriptions/settings'];
     let lastError: any = null;
     for (const endpoint of candidates) {
       try {
@@ -1276,7 +1276,7 @@ export const authService = {
     throw lastError;
   },
   saveClubSettings: async (settings: any) => {
-    const candidates = ['/api/auth/admin/subscriptions/settings', '/auth/admin/subscriptions/settings'];
+    const candidates = ['/api/auth/admin/subscriptions/settings'];
     let lastError: any = null;
     for (const endpoint of candidates) {
       try {
@@ -1289,7 +1289,7 @@ export const authService = {
     throw lastError;
   },
   saveSubscriptionPlan: async (plan: any) => {
-    const candidates = ['/api/auth/admin/subscriptions/plans', '/auth/auth/admin/subscriptions/plans'];
+    const candidates = ['/api/auth/admin/subscriptions/plans'];
     let lastError: any = null;
     for (const endpoint of candidates) {
       try {
@@ -1302,7 +1302,7 @@ export const authService = {
     throw lastError;
   },
   deleteSubscriptionPlan: async (code: string) => {
-    const candidates = [`/api/auth/admin/subscriptions/plans/${code}`, `/auth/admin/subscriptions/plans/${code}`];
+    const candidates = [`/api/auth/admin/subscriptions/plans/${code}`];
     let lastError: any = null;
     for (const endpoint of candidates) {
       try {
@@ -1323,7 +1323,7 @@ export const authService = {
     deliveryAddress: string;
     firstDeliveryDate: string;
   }) => {
-    const candidates = ['/api/auth/subscriptions/checkout', '/auth/subscriptions/checkout'];
+    const candidates = ['/api/auth/subscriptions/checkout'];
     let lastError: any = null;
     for (const endpoint of candidates) {
       try {
@@ -1336,7 +1336,7 @@ export const authService = {
     throw lastError;
   },
   getMySubscription: async () => {
-    const candidates = ['/api/auth/subscriptions/me', '/auth/subscriptions/me'];
+    const candidates = ['/api/auth/subscriptions/me'];
     let lastError: any = null;
     for (const endpoint of candidates) {
       try {
