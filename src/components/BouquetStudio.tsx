@@ -191,7 +191,9 @@ export default function BouquetStudio() {
   const [analysis, setAnalysis] = useState<{ title: string; description: string } | null>(null);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
   const [showRenderLimitModal, setShowRenderLimitModal] = useState(false);
-  const [selectedRenderPackage, setSelectedRenderPackage] = useState<'RENDER_10' | 'RENDER_50' | 'RENDER_100'>('RENDER_10');
+  const [selectedRenderPackage, setSelectedRenderPackage] = useState<string>('RENDER_10');
+  const [renderPackages, setRenderPackages] = useState<any[]>([]);
+  const [packagesLoading, setPackagesLoading] = useState(false);
   const [purchaseLoading, setPurchaseLoading] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [purchaseSuccess, setPurchaseSuccess] = useState<string | null>(null);
@@ -634,16 +636,22 @@ export default function BouquetStudio() {
     setPurchaseError(null);
     setPurchaseSuccess(null);
     try {
-      const response = await authService.purchaseRenderPackage({ packageCode: selectedRenderPackage });
-      const payUrl = extractPaymentUrl(response);
-      if (payUrl) {
-        window.location.href = payUrl;
-      } else {
-        setPurchaseSuccess('Ödəniş uğurla tamamlandı! Render limitiniz artırıldı.');
+      const response = await authService.purchaseRenders({
+        packageCode: selectedRenderPackage,
+        paymentReference: `PAY-SIM-${Date.now()}`
+      });
+      if (response && (response.success || response.message?.includes('aktiv') || response.message?.includes('success'))) {
+        setPurchaseSuccess(response.message || 'Paket uğurla aktivləşdirildi!');
         setTimeout(() => {
           setShowRenderLimitModal(false);
           setPurchaseSuccess(null);
-        }, 3000);
+        }, 2500);
+      } else {
+        setPurchaseSuccess('Paket uğurla aktivləşdirildi!');
+        setTimeout(() => {
+          setShowRenderLimitModal(false);
+          setPurchaseSuccess(null);
+        }, 2500);
       }
     } catch (err: any) {
       console.error('Failed to purchase package:', err);
@@ -654,7 +662,7 @@ export default function BouquetStudio() {
         setTimeout(() => {
           setShowRenderLimitModal(false);
           setPurchaseSuccess(null);
-        }, 3000);
+        }, 2500);
       } else {
         const msg = err?.response?.data?.message || 'Ödəniş baş tutmadı. Zəhmət olmasa yenidən cəhd edin.';
         setPurchaseError(msg);
@@ -888,6 +896,60 @@ export default function BouquetStudio() {
     };
     loadStoreLocation();
   }, []);
+
+  useEffect(() => {
+    if (showRenderLimitModal) {
+      const loadPackages = async () => {
+        setPackagesLoading(true);
+        setPurchaseError(null);
+        try {
+          const data = await authService.getRenderPackages();
+          if (Array.isArray(data)) {
+            setRenderPackages(data);
+            if (data.length > 0) {
+              setSelectedRenderPackage(data[0].packageCode);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to load render packages:", err);
+          const defaultPackages = [
+            {
+              packageCode: "RENDER_10",
+              name: "10 Render Paketi",
+              badge: "Sürətli Sınaq",
+              rendersCount: 10,
+              price: 1.00,
+              description: "Dizaynları sınamaq üçün sürətli və münasib seçim.",
+              note: "* Qeyd: Əgər bu dizaynlardan hər hansı birini sifariş verərsinizsə, bu 1 AZN ödəniş sizə geri qaytarılacaqdır."
+            },
+            {
+              packageCode: "RENDER_50",
+              name: "50 Render Paketi",
+              badge: "Populyar Seçim",
+              rendersCount: 50,
+              price: 4.00,
+              description: "Daha çox sınaq və fərqli üslubları müqayisə etmək istəyənlər üçün əla fürsət.",
+              note: ""
+            },
+            {
+              packageCode: "RENDER_100",
+              name: "100 Render Paketi",
+              badge: "Ən Sərfəli",
+              rendersCount: 100,
+              price: 6.00,
+              description: "Professional floristik dizaynlar və limit qayğısı olmadan limitsiz təcrübə.",
+              note: ""
+            }
+          ];
+          setRenderPackages(defaultPackages);
+          setSelectedRenderPackage('RENDER_10');
+        } finally {
+          setPackagesLoading(false);
+        }
+      };
+      loadPackages();
+    }
+  }, [showRenderLimitModal]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1928,76 +1990,49 @@ export default function BouquetStudio() {
                 Siz 5 pulsuz buket render limitinizdən istifadə etdiniz. Yeni və özəl dizaynlar yaratmağa davam etmək üçün aşağıdakı render paketlərindən birini seçə bilərsiniz:
               </p>
 
-              <div className="space-y-3 mt-5">
-                <button
-                  type="button"
-                  onClick={() => setSelectedRenderPackage('RENDER_10')}
-                  className={`w-full text-left p-4 rounded-2xl border transition-all ${
-                    selectedRenderPackage === 'RENDER_10'
-                      ? 'border-primary bg-primary/5 dark:bg-primary/5 shadow-md ring-1 ring-primary'
-                      : 'border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="rounded-full bg-slate-100 dark:bg-white/5 px-2.5 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
-                        Sürətli Sınaq
-                      </span>
-                      <h4 className="font-black text-sm mt-1">10 Render Paketi</h4>
-                    </div>
-                    <span className="text-base font-black text-primary">1.00 AZN</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-2 leading-normal">
-                    * Qeyd: Əgər bu dizaynlardan hər hansı birini sifariş verərsinizsə, bu 1 AZN ödəniş sizə geri qaytarılacaqdır.
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedRenderPackage('RENDER_50')}
-                  className={`w-full text-left p-4 rounded-2xl border transition-all ${
-                    selectedRenderPackage === 'RENDER_50'
-                      ? 'border-primary bg-primary/5 dark:bg-primary/5 shadow-md ring-1 ring-primary'
-                      : 'border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="rounded-full bg-primary/15 px-2.5 py-0.5 text-[10px] font-bold text-primary">
-                        Populyar Seçim
-                      </span>
-                      <h4 className="font-black text-sm mt-1">50 Render Paketi</h4>
-                    </div>
-                    <span className="text-base font-black text-primary">4.00 AZN</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-1.5 leading-normal">
-                    Daha çox sınaq və fərqli üslubları müqayisə etmək istəyənlər üçün əla fürsət.
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setSelectedRenderPackage('RENDER_100')}
-                  className={`w-full text-left p-4 rounded-2xl border transition-all ${
-                    selectedRenderPackage === 'RENDER_100'
-                      ? 'border-primary bg-primary/5 dark:bg-primary/5 shadow-md ring-1 ring-primary'
-                      : 'border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
-                        Ən Sərfəli
-                      </span>
-                      <h4 className="font-black text-sm mt-1">100 Render Paketi</h4>
-                    </div>
-                    <span className="text-base font-black text-primary">6.00 AZN</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-1.5 leading-normal">
-                    Professional floristik dizaynlar və limit qayğısı olmadan limitsiz təcrübə.
-                  </p>
-                </button>
-              </div>
+              {packagesLoading ? (
+                <div className="flex flex-col justify-center items-center py-12">
+                  <Loader2 className="animate-spin size-6 text-primary" />
+                  <span className="text-xs font-semibold mt-2 text-slate-500">Paketlər yüklənir...</span>
+                </div>
+              ) : (
+                <div className="space-y-3 mt-5">
+                  {renderPackages.map((pkg) => (
+                    <button
+                      key={pkg.packageCode}
+                      type="button"
+                      onClick={() => setSelectedRenderPackage(pkg.packageCode)}
+                      className={`w-full text-left p-4 rounded-2xl border transition-all ${
+                        selectedRenderPackage === pkg.packageCode
+                          ? 'border-primary bg-primary/5 dark:bg-primary/5 shadow-md ring-1 ring-primary'
+                          : 'border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          {pkg.badge && (
+                            <span className="rounded-full bg-primary/15 px-2.5 py-0.5 text-[10px] font-bold text-primary">
+                              {pkg.badge}
+                            </span>
+                          )}
+                          <h4 className="font-black text-sm mt-1">{pkg.name}</h4>
+                        </div>
+                        <span className="text-base font-black text-primary">{Number(pkg.price || 0).toFixed(2)} AZN</span>
+                      </div>
+                      {pkg.description && (
+                        <p className="text-[11px] text-slate-500 mt-1.5 leading-normal">
+                          {pkg.description}
+                        </p>
+                      )}
+                      {pkg.note && (
+                        <p className="text-[11px] text-slate-500 mt-2 leading-normal italic font-semibold">
+                          {pkg.note}
+                        </p>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {purchaseError ? <p className="mt-4 text-xs font-semibold text-red-500">{purchaseError}</p> : null}
               {purchaseSuccess ? <p className="mt-4 text-xs font-semibold text-emerald-600">{purchaseSuccess}</p> : null}

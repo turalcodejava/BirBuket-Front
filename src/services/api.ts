@@ -1320,8 +1320,21 @@ export const authService = {
     });
     return response.data?.data ?? response.data;
   },
-  purchaseRenderPackage: async (payload: { packageCode: string }) => {
-    const candidates = ['/api/bouquet/render/purchase-package', '/bouquet/render/purchase-package'];
+  getRenderPackages: async () => {
+    const candidates = ['/api/bouquet/render-packages', '/bouquet/render-packages'];
+    let lastError: any = null;
+    for (const endpoint of candidates) {
+      try {
+        const res = await apiClient.get<any>(endpoint);
+        return res.data?.data ?? res.data ?? [];
+      } catch (err: any) {
+        lastError = err;
+      }
+    }
+    throw lastError;
+  },
+  purchaseRenders: async (payload: { packageCode: string; paymentReference: string }) => {
+    const candidates = ['/api/bouquet/purchase-renders', '/bouquet/purchase-renders'];
     let lastError: any = null;
     for (const endpoint of candidates) {
       try {
