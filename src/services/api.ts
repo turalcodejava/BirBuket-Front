@@ -2194,6 +2194,22 @@ export const adminService = {
     }
     throw lastError;
   },
+  saveRenderPackage: async (pkg: any) => {
+    const res = await apiClient.post<any>('/api/bouquet/admin/render-packages', pkg, { headers: getAuthHeaders() });
+    return res.data?.data ?? res.data ?? null;
+  },
+  deleteRenderPackage: async (code: string) => {
+    const res = await apiClient.delete<any>(`/api/bouquet/admin/render-packages/${code}`, { headers: getAuthHeaders() });
+    return res.data?.data ?? res.data ?? null;
+  },
+  getUserRenderStatus: async (userId: number) => {
+    const res = await apiClient.get<any>(`/api/bouquet/admin/user-renders/${userId}`, { headers: getAuthHeaders() });
+    return res.data?.data ?? res.data ?? null;
+  },
+  updateUserRenderLimit: async (userId: number, limit: number) => {
+    const res = await apiClient.post<any>(`/api/bouquet/admin/user-renders/${userId}/override`, { limit }, { headers: getAuthHeaders() });
+    return res.data?.data ?? res.data ?? null;
+  }
 };
 
 export type DirectChatConversation = {
