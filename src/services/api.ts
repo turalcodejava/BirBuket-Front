@@ -2707,116 +2707,14 @@ export const plantDoctorService = {
     });
     return res.data;
   },
-  getUserDiagnoses: async (userId: number, opts?: { cacheBust?: boolean }) => {
+  getUserDiagnoses: async (email: string, opts?: { cacheBust?: boolean }) => {
     const headers = getAuthHeaders();
-    const params = opts?.cacheBust ? { _t: Date.now() } : undefined;
-    const uid = Number(userId);
-
-    const unwrapPlantDoctorItem = (x: any): any => {
-      if (!x || typeof x !== 'object') return {};
-      if (x.data && typeof x.data === 'object') return x.data;
-      return x;
-    };
-
-    const extractOwnerUserId = (x: any): number => {
-      const src = unwrapPlantDoctorItem(x);
-      const nested = [src?.user, src?.customer, src?.owner].filter(Boolean);
-      const candidates: unknown[] = [
-        src?.userId,
-        src?.user_id,
-        src?.customerUserId,
-        src?.customer_user_id,
-        src?.ownerUserId,
-        src?.owner_user_id,
-        src?.requestUserId,
-        src?.request_user_id,
-        src?.createdByUserId,
-        src?.created_by_user_id,
-        src?.accountUserId,
-        src?.account_user_id,
-        src?.accountId,
-        src?.customerId,
-        src?.customer_id,
-        src?.memberId,
-        src?.clientUserId,
-        src?.clientResolvedOwnerUserId,
-        ...nested.flatMap((o: any) => [o?.id, o?.userId, o?.user_id]),
-      ];
-      for (const raw of candidates) {
-        const n = Number(raw);
-        if (Number.isFinite(n) && n > 0) return n;
-      }
-      return 0;
-    };
-
-    const extractRecordId = (x: any): number => {
-      const src = unwrapPlantDoctorItem(x);
-      const n = Number(src?.id ?? src?.diagnosisId ?? src?.homeVisitId ?? 0);
-      return Number.isFinite(n) && n > 0 ? n : 0;
-    };
-
-    const tagResolvedOwner = (item: any, resolvedUid: number): any => {
-      if (!item || typeof item !== 'object') return item;
-      if (item.data && typeof item.data === 'object') {
-        return { ...item, data: { ...item.data, clientResolvedOwnerUserId: resolvedUid } };
-      }
-      return { ...item, clientResolvedOwnerUserId: resolvedUid };
-    };
-
-    const byId = new Map<number, any>();
-
-    const mergePrimaryList = (list: any[]) => {
-      if (!list.length) return;
-      const owners = list.map((item) => extractOwnerUserId(item));
-      const anyForeignOwner = owners.some((o) => o > 0 && o !== uid);
-
-      for (const item of list) {
-        const owner = extractOwnerUserId(item);
-        const id = extractRecordId(item);
-        if (id <= 0) continue;
-
-        if (anyForeignOwner) {
-          if (owner !== uid) continue;
-        } else {
-          if (owner > 0 && owner !== uid) continue;
-        }
-
-        const toStore =
-          !anyForeignOwner && owner === 0 ? tagResolvedOwner(item, uid) : item;
-        if (!byId.has(id)) byId.set(id, toStore);
-      }
-    };
-    let lastError: any = null;
-
-    // Əvvəlcə ümumi siyahıdan mülkiyyətçi məlumatı olan qeydlər — başqa userlərə məxsus sətirlər burada kənarlaşır.
-    try {
-      const all = await plantDoctorService.getAllDiagnoses(opts);
-      const list = listFromAnyPayload(all);
-      for (const item of list) {
-        const owner = extractOwnerUserId(item);
-        if (owner !== uid) continue;
-        const id = extractRecordId(item);
-        if (id > 0 && !byId.has(id)) byId.set(id, item);
-      }
-    } catch {
-      //
-    }
-
-    // Sonra `userId` sorğusu — yalnız cari istifadəçiyə aid və ya server filtrinə etibar (xarici user sırası görünsə, sıx süzüm).
-    try {
-      const res = await apiClient.get<any>('/api/plantdoctor/diagnosis', {
-        headers,
-        params: { userId, ...(params || {}) },
-      });
-      const list = listFromAnyPayload(res.data);
-      mergePrimaryList(list);
-    } catch (e: any) {
-      lastError = e;
-    }
-
-    if (byId.size > 0) return Array.from(byId.values());
-    if (lastError) throw lastError;
-    return [];
+    const params = { email, ...(opts?.cacheBust ? { _t: Date.now() } : {}) };
+    const res = await apiClient.get<any>('/api/plantdoctor/diagnosis', {
+      headers,
+      params,
+    });
+    return listFromAnyPayload(res.data);
   },
 };
 

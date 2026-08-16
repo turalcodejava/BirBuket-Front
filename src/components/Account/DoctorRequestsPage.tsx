@@ -124,7 +124,7 @@ const statusLabel = (status: string) => {
 };
 
 export default function DoctorRequestsPage() {
-  const { userId } = useAuth();
+  const { userId, user } = useAuth();
   const [rows, setRows] = useState<DoctorRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -132,7 +132,7 @@ export default function DoctorRequestsPage() {
 
   useEffect(() => {
     const run = async () => {
-      if (!userId) {
+      if (!userId || !user?.email) {
         setRows([]);
         setLoading(false);
         return;
@@ -140,10 +140,10 @@ export default function DoctorRequestsPage() {
       setLoading(true);
       setError('');
       try {
-        const list = await plantDoctorService.getUserDiagnoses(userId, { cacheBust: true });
+        const list = await plantDoctorService.getUserDiagnoses(user.email, { cacheBust: true });
         const parsed = (Array.isArray(list) ? list : [])
           .map(parseRecord)
-          .filter((x) => x.id > 0 && x.ownerUserId === Number(userId));
+          .filter((x) => x.id > 0);
         parsed.sort((a, b) => {
           const ta = new Date(a.createdAt || 0).getTime();
           const tb = new Date(b.createdAt || 0).getTime();
