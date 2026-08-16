@@ -426,6 +426,15 @@ export default function BouquetStudio() {
       navigate('/login');
       return;
     }
+    if (userId) {
+      const allowedLimitStr = localStorage.getItem('mock_user_render_' + userId);
+      const allowedLimit = allowedLimitStr !== null ? Number(allowedLimitStr) : 5;
+      const currentRenders = Number(localStorage.getItem('mock_user_rendered_count_' + userId)) || 0;
+      if (currentRenders >= allowedLimit) {
+        setShowRenderLimitModal(true);
+        return;
+      }
+    }
     if (status === 'RENDERING') return;
 
     const withTimeout = async <T,>(promise: Promise<T>, ms: number, fallback: T): Promise<T> => {
@@ -502,6 +511,10 @@ export default function BouquetStudio() {
       if (renderIntervalRef.current) clearInterval(renderIntervalRef.current);
       setRenderProgress(100);
       setStatus('COMPLETED');
+      if (userId) {
+        const currentRenders = Number(localStorage.getItem('mock_user_rendered_count_' + userId)) || 0;
+        localStorage.setItem('mock_user_rendered_count_' + userId, String(currentRenders + 1));
+      }
     }
   };
 
@@ -639,6 +652,19 @@ export default function BouquetStudio() {
     setPurchaseLoading(true);
     setPurchaseError(null);
     setPurchaseSuccess(null);
+
+    const pkgObj = renderPackages.find(p => p.packageCode === selectedRenderPackage);
+    const rendersToAdd = pkgObj?.rendersCount || (
+      selectedRenderPackage === 'RENDER_10' ? 10 :
+      selectedRenderPackage === 'RENDER_50' ? 50 : 100
+    );
+
+    if (userId) {
+      const allowedLimitStr = localStorage.getItem('mock_user_render_' + userId);
+      const currentLimit = allowedLimitStr !== null ? Number(allowedLimitStr) : 5;
+      localStorage.setItem('mock_user_render_' + userId, String(currentLimit + rendersToAdd));
+    }
+
     try {
       const response = await authService.purchaseRenders({
         packageCode: selectedRenderPackage,
@@ -668,6 +694,10 @@ export default function BouquetStudio() {
           setPurchaseSuccess(null);
         }, 2500);
       } else {
+        if (userId) {
+          const currentLimit = Number(localStorage.getItem('mock_user_render_' + userId)) || 5;
+          localStorage.setItem('mock_user_render_' + userId, String(Math.max(5, currentLimit - rendersToAdd)));
+        }
         const msg = err?.response?.data?.message || 'Ödəniş baş tutmadı. Zəhmət olmasa yenidən cəhd edin.';
         setPurchaseError(msg);
       }
