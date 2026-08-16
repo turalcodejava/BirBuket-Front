@@ -1372,7 +1372,17 @@ export const authService = {
     });
     return response.data?.data ?? response.data;
   },
-  getRenderPackages: async () => {
+  getRenderPackages: async (opts?: { bypassCache?: boolean }) => {
+    if (!opts?.bypassCache) {
+      const cached = localStorage.getItem('mock_render_packages');
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch {
+          //
+        }
+      }
+    }
     const candidates = ['/api/bouquet/render-packages', '/bouquet/render-packages'];
     let lastError: any = null;
     for (const endpoint of candidates) {

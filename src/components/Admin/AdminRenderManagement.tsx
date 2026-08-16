@@ -39,9 +39,10 @@ export default function AdminRenderManagement() {
   const loadPackages = async () => {
     setPackagesLoading(true);
     try {
-      const data = await authService.getRenderPackages();
+      const data = await authService.getRenderPackages({ bypassCache: true });
       if (Array.isArray(data)) {
         setPackages(data);
+        localStorage.setItem(MOCK_PACKAGES_KEY, JSON.stringify(data));
       }
     } catch {
       // Offline fallback: load from localStorage mock
@@ -98,31 +99,33 @@ export default function AdminRenderManagement() {
     }
     setPkgError(null);
     setPkgSuccess(null);
+    
+    const pkgToSave = {
+      packageCode: editingPackage.packageCode,
+      name: editingPackage.name || '',
+      badge: editingPackage.badge || '',
+      rendersCount: Number(editingPackage.rendersCount) || 10,
+      price: Number(editingPackage.price) || 1.00,
+      description: editingPackage.description || '',
+      note: editingPackage.note || ''
+    };
+
+    const updated = [...packages];
+    const idx = updated.findIndex(p => p.packageCode === editingPackage.packageCode);
+    if (idx >= 0) {
+      updated[idx] = pkgToSave;
+    } else {
+      updated.push(pkgToSave);
+    }
+    setPackages(updated);
+    localStorage.setItem(MOCK_PACKAGES_KEY, JSON.stringify(updated));
+
     try {
       await adminService.saveRenderPackage(editingPackage);
       setPkgSuccess('Paket uğurla yadda saxlanıldı.');
       setEditingPackage(null);
       loadPackages();
     } catch (err: any) {
-      // Offline fallback: save locally
-      const updated = [...packages];
-      const idx = updated.findIndex(p => p.packageCode === editingPackage.packageCode);
-      const pkgToSave = {
-        packageCode: editingPackage.packageCode,
-        name: editingPackage.name || '',
-        badge: editingPackage.badge || '',
-        rendersCount: Number(editingPackage.rendersCount) || 10,
-        price: Number(editingPackage.price) || 1.00,
-        description: editingPackage.description || '',
-        note: editingPackage.note || ''
-      };
-      if (idx >= 0) {
-        updated[idx] = pkgToSave;
-      } else {
-        updated.push(pkgToSave);
-      }
-      setPackages(updated);
-      localStorage.setItem(MOCK_PACKAGES_KEY, JSON.stringify(updated));
       setPkgSuccess('Paket uğurla yadda saxlanıldı (Local Mock Mode).');
       setEditingPackage(null);
     }
@@ -132,15 +135,16 @@ export default function AdminRenderManagement() {
     if (!confirm('Bu paketi silmək istədiyinizdən əminsiniz?')) return;
     setPkgError(null);
     setPkgSuccess(null);
+
+    const updated = packages.filter(p => p.packageCode !== code);
+    setPackages(updated);
+    localStorage.setItem(MOCK_PACKAGES_KEY, JSON.stringify(updated));
+
     try {
       await adminService.deleteRenderPackage(code);
       setPkgSuccess('Paket silindi.');
       loadPackages();
     } catch {
-      // Offline fallback: delete locally
-      const updated = packages.filter(p => p.packageCode !== code);
-      setPackages(updated);
-      localStorage.setItem(MOCK_PACKAGES_KEY, JSON.stringify(updated));
       setPkgSuccess('Paket silindi (Local Mock Mode).');
     }
   };
