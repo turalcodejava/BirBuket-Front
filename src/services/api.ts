@@ -1259,6 +1259,58 @@ export const authService = {
     }
     throw lastError;
   },
+  getClubSettings: async () => {
+    const candidates = ['/api/auth/subscriptions/settings', '/auth/subscriptions/settings'];
+    let lastError: any = null;
+    for (const endpoint of candidates) {
+      try {
+        const res = await apiClient.get<any>(endpoint, { headers: getAuthHeaders() });
+        return res.data?.data ?? res.data ?? null;
+      } catch (err: any) {
+        lastError = err;
+      }
+    }
+    throw lastError;
+  },
+  saveClubSettings: async (settings: any) => {
+    const candidates = ['/api/auth/admin/subscriptions/settings', '/auth/admin/subscriptions/settings'];
+    let lastError: any = null;
+    for (const endpoint of candidates) {
+      try {
+        const res = await apiClient.post<any>(endpoint, settings, { headers: getAuthHeaders() });
+        return res.data?.data ?? res.data ?? null;
+      } catch (err: any) {
+        lastError = err;
+      }
+    }
+    throw lastError;
+  },
+  saveSubscriptionPlan: async (plan: any) => {
+    const candidates = ['/api/auth/admin/subscriptions/plans', '/auth/auth/admin/subscriptions/plans'];
+    let lastError: any = null;
+    for (const endpoint of candidates) {
+      try {
+        const res = await apiClient.post<any>(endpoint, plan, { headers: getAuthHeaders() });
+        return res.data?.data ?? res.data ?? null;
+      } catch (err: any) {
+        lastError = err;
+      }
+    }
+    throw lastError;
+  },
+  deleteSubscriptionPlan: async (code: string) => {
+    const candidates = [`/api/auth/admin/subscriptions/plans/${code}`, `/auth/admin/subscriptions/plans/${code}`];
+    let lastError: any = null;
+    for (const endpoint of candidates) {
+      try {
+        const res = await apiClient.delete<any>(endpoint, { headers: getAuthHeaders() });
+        return res.data?.data ?? res.data ?? null;
+      } catch (err: any) {
+        lastError = err;
+      }
+    }
+    throw lastError;
+  },
   checkoutSubscription: async (payload: {
     planCode: string;
     style: string;

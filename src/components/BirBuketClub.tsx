@@ -37,6 +37,20 @@ export default function BirBuketClub() {
   const [checkoutLoadingCode, setCheckoutLoadingCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [clubSettings, setClubSettings] = useState<{
+    pricePerDelivery: number;
+    styles: Array<{ name: string; img: string; desc: string }>;
+    frequencies: string[];
+  }>({
+    pricePerDelivery: 25,
+    styles: [
+      { name: 'Modern & Minimal', img: 'https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=300&q=80', desc: 'Zərif xətlər, tək tonlu dizayn.' },
+      { name: 'Klassik Romantik', img: 'https://images.unsplash.com/photo-1596436889106-be35e843f974?auto=format&fit=crop&w=300&q=80', desc: 'Qızılgüllər və klassik toxunuşlar.' },
+      { name: 'Vəhşi Təbiət', img: 'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?auto=format&fit=crop&w=300&q=80', desc: 'Çöl çiçəkləri və bohem harmoniyası.' },
+      { name: 'Mövsüm Sürprizi', img: 'https://images.unsplash.com/photo-1587334206502-747aba2e8c25?auto=format&fit=crop&w=300&q=80', desc: 'Fəslin ən təravətli sürpriz çiçəkləri.' }
+    ],
+    frequencies: ['Hər Həftə', '2 Həftədən Bir', 'Ayda Bir']
+  });
 
   // Wizard state variables
   const [selectedPlanCode, setSelectedPlanCode] = useState<string>('QUARTERLY');
@@ -53,11 +67,32 @@ export default function BirBuketClub() {
     const loadData = async () => {
       setLoading(true);
       setError(null);
+      
       try {
         const plansRes = await authService.getSubscriptionPlans();
         if (!cancelled) setPlans(Array.isArray(plansRes) ? plansRes : []);
       } catch {
         if (!cancelled) setPlans([]);
+      }
+
+      try {
+        const settingsRes = await authService.getClubSettings();
+        if (settingsRes && !cancelled) {
+          setClubSettings({
+            pricePerDelivery: Number(settingsRes.pricePerDelivery) || 25,
+            styles: Array.isArray(settingsRes.styles) ? settingsRes.styles : clubSettings.styles,
+            frequencies: Array.isArray(settingsRes.frequencies) ? settingsRes.frequencies : clubSettings.frequencies
+          });
+        }
+      } catch {
+        const cached = localStorage.getItem('mock_club_settings');
+        if (cached && !cancelled) {
+          try {
+            setClubSettings(JSON.parse(cached));
+          } catch {
+            //
+          }
+        }
       }
 
       if (token) {
@@ -98,7 +133,7 @@ export default function BirBuketClub() {
   const calculatePlanPrice = (periodMonths: number, discountPercent: number, freq: string) => {
     const deliveriesPerMonth = getDeliveriesPerMonth(freq);
     const totalDeliveries = periodMonths * deliveriesPerMonth;
-    const pricePerDelivery = 25; // 25 AZN per bouquet
+    const pricePerDelivery = clubSettings.pricePerDelivery; // dynamic price per delivery
     const basePrice = totalDeliveries * pricePerDelivery;
     const discountMultiplier = 1 - (discountPercent / 100);
     return Math.round(basePrice * discountMultiplier);
@@ -494,12 +529,7 @@ export default function BirBuketClub() {
                     <div>
                       <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">1. Buket Üslubunu Seçin</h3>
                       <div className="grid grid-cols-2 gap-4">
-                        {[
-                          { name: 'Modern & Minimal', img: 'https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=300&q=80', desc: 'Zərif xətlər, tək tonlu dizayn.' },
-                          { name: 'Klassik Romantik', img: 'https://images.unsplash.com/photo-1596436889106-be35e843f974?auto=format&fit=crop&w=300&q=80', desc: 'Qızılgüllər və klassik toxunuşlar.' },
-                          { name: 'Vəhşi Təbiət', img: 'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?auto=format&fit=crop&w=300&q=80', desc: 'Çöl çiçəkləri və bohem harmoniyası.' },
-                          { name: 'Mövsüm Sürprizi', img: 'https://images.unsplash.com/photo-1587334206502-747aba2e8c25?auto=format&fit=crop&w=300&q=80', desc: 'Fəslin ən təravətli sürpriz çiçəkləri.' }
-                        ].map((styleObj) => {
+                        {clubSettings.styles.map((styleObj) => {
                           const isSelectedStyle = selectedStyle === styleObj.name;
                           return (
                             <button
@@ -536,7 +566,7 @@ export default function BirBuketClub() {
                     <div>
                       <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">2. Çatdırılma Tezliyi</h3>
                       <div className="flex gap-4">
-                        {['Hər Həftə', '2 Həftədən Bir', 'Ayda Bir'].map((freq) => {
+                        {clubSettings.frequencies.map((freq) => {
                           const isSelectedFreq = selectedFrequency === freq;
                           return (
                             <button
