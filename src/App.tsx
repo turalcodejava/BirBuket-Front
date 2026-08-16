@@ -27,7 +27,6 @@ import ResetPassword from './components/Auth/ResetPassword';
 import AccountLayout from './components/Account/AccountLayout';
 import ProfileInfo from './components/Account/ProfileInfo';
 import OrderHistory from './components/Account/OrderHistory';
-import AddressesPage from './components/Account/AddressesPage';
 import FavoritesPage from './components/Account/FavoritesPage';
 import DoctorRequestsPage from './components/Account/DoctorRequestsPage';
 import CartPage from './components/CartPage';
@@ -282,7 +281,6 @@ function AppContent() {
           >
             <Route index element={<ProfileInfo />} />
             <Route path="orders" element={<OrderHistory />} />
-            <Route path="addresses" element={<AddressesPage />} />
             <Route path="favorites" element={<FavoritesPage />} />
             <Route path="doctor-requests" element={<DoctorRequestsPage />} />
           </Route>

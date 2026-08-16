@@ -7,7 +7,6 @@ import { useAuth } from '../../context/AuthContext';
 const menuItems = [
   { icon: UserIcon, label: 'Profil məlumatlarım', to: '/account', end: true },
   { icon: Package, label: 'Sifariş tarixçəm', to: '/account/orders' },
-  { icon: MapPin, label: 'Ünvanlarım', to: '/account/addresses' },
   { icon: Heart, label: 'Sevimlilərim', to: '/account/favorites' },
   { icon: Stethoscope, label: 'Həkim müraciətləri', to: '/account/doctor-requests' },
 ];
