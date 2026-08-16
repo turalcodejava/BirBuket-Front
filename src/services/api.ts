@@ -1319,6 +1319,19 @@ export const authService = {
       headers: getAuthHeaders()
     });
     return response.data?.data ?? response.data;
+  },
+  purchaseRenderPackage: async (payload: { packageCode: string }) => {
+    const candidates = ['/api/bouquet/render/purchase-package', '/bouquet/render/purchase-package'];
+    let lastError: any = null;
+    for (const endpoint of candidates) {
+      try {
+        const res = await apiClient.post<any>(endpoint, payload, { headers: getAuthHeaders() });
+        return res.data?.data ?? res.data ?? null;
+      } catch (err: any) {
+        lastError = err;
+      }
+    }
+    throw lastError;
   }
 };
 

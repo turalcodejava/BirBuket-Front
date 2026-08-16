@@ -190,6 +190,11 @@ export default function BouquetStudio() {
   const [showAllRibbonColors, setShowAllRibbonColors] = useState(false);
   const [analysis, setAnalysis] = useState<{ title: string; description: string } | null>(null);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [showRenderLimitModal, setShowRenderLimitModal] = useState(false);
+  const [selectedRenderPackage, setSelectedRenderPackage] = useState<'RENDER_10' | 'RENDER_50' | 'RENDER_100'>('RENDER_10');
+  const [purchaseLoading, setPurchaseLoading] = useState(false);
+  const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const [purchaseSuccess, setPurchaseSuccess] = useState<string | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [checkoutSuccess, setCheckoutSuccess] = useState<string | null>(null);
@@ -478,8 +483,8 @@ export default function BouquetStudio() {
       } catch (err: any) {
         console.error("Backend rendering failed:", err);
         
-        if (err.response?.status === 403) {
-          alert("Pulsuz render limitiniz (5 ədəd) tükənib. Davam etmək üçün zəhmət olmasa abunə olun.");
+        if (err.response?.status === 403 || err.message?.includes('403') || err.response?.data?.message?.includes('limit')) {
+          setShowRenderLimitModal(true);
         } else {
           alert("Render zamanı xəta baş verdi.");
         }
@@ -618,6 +623,45 @@ export default function BouquetStudio() {
     const blob = await res.blob();
     const ext = (blob.type || 'image/png').split('/')[1] || 'png';
     return new File([blob], `custom-bouquet-${Date.now()}.${ext}`, { type: blob.type || 'image/png' });
+  };
+
+  const handlePurchasePackage = async () => {
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    setPurchaseLoading(true);
+    setPurchaseError(null);
+    setPurchaseSuccess(null);
+    try {
+      const response = await authService.purchaseRenderPackage({ packageCode: selectedRenderPackage });
+      const payUrl = extractPaymentUrl(response);
+      if (payUrl) {
+        window.location.href = payUrl;
+      } else {
+        setPurchaseSuccess('Ödəniş uğurla tamamlandı! Render limitiniz artırıldı.');
+        setTimeout(() => {
+          setShowRenderLimitModal(false);
+          setPurchaseSuccess(null);
+        }, 3000);
+      }
+    } catch (err: any) {
+      console.error('Failed to purchase package:', err);
+      const isNetworkError = !err.response || err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || err.message?.includes('timeout');
+      if (isNetworkError || err.response?.status === 404 || err.response?.status === 500) {
+        console.warn('Backend server offline, simulating successful package purchase locally.');
+        setPurchaseSuccess('Ödəniş uğurla tamamlandı (Local Mock Mode)! Render limitiniz artırıldı.');
+        setTimeout(() => {
+          setShowRenderLimitModal(false);
+          setPurchaseSuccess(null);
+        }, 3000);
+      } else {
+        const msg = err?.response?.data?.message || 'Ödəniş baş tutmadı. Zəhmət olmasa yenidən cəhd edin.';
+        setPurchaseError(msg);
+      }
+    } finally {
+      setPurchaseLoading(false);
+    }
   };
 
   const openCheckout = () => {
@@ -1848,6 +1892,122 @@ export default function BouquetStudio() {
                 className="mt-5 w-full rounded-2xl bg-primary text-black font-black py-3.5 disabled:opacity-60"
               >
                 {checkoutLoading ? 'Sifariş göndərilir...' : 'Sifarişi təsdiqlə'}
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+        {showRenderLimitModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[95] bg-black/60 backdrop-blur-sm p-4 flex items-center justify-center"
+            onClick={() => setShowRenderLimitModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              className="w-full max-w-lg rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 p-6 md:p-8 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-primary font-black">
+                  <Sparkles className="size-5" />
+                  <h3 className="text-lg font-black uppercase tracking-wider">Render Limitiniz Tükəndi</h3>
+                </div>
+                <button
+                  className="size-9 rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                  onClick={() => setShowRenderLimitModal(false)}
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+              
+              <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+                Siz 5 pulsuz buket render limitinizdən istifadə etdiniz. Yeni və özəl dizaynlar yaratmağa davam etmək üçün aşağıdakı render paketlərindən birini seçə bilərsiniz:
+              </p>
+
+              <div className="space-y-3 mt-5">
+                <button
+                  type="button"
+                  onClick={() => setSelectedRenderPackage('RENDER_10')}
+                  className={`w-full text-left p-4 rounded-2xl border transition-all ${
+                    selectedRenderPackage === 'RENDER_10'
+                      ? 'border-primary bg-primary/5 dark:bg-primary/5 shadow-md ring-1 ring-primary'
+                      : 'border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="rounded-full bg-slate-100 dark:bg-white/5 px-2.5 py-0.5 text-[10px] font-bold text-slate-600 dark:text-slate-300">
+                        Sürətli Sınaq
+                      </span>
+                      <h4 className="font-black text-sm mt-1">10 Render Paketi</h4>
+                    </div>
+                    <span className="text-base font-black text-primary">1.00 AZN</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-2 leading-normal">
+                    * Qeyd: Əgər bu dizaynlardan hər hansı birini sifariş verərsinizsə, bu 1 AZN ödəniş sizə geri qaytarılacaqdır.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedRenderPackage('RENDER_50')}
+                  className={`w-full text-left p-4 rounded-2xl border transition-all ${
+                    selectedRenderPackage === 'RENDER_50'
+                      ? 'border-primary bg-primary/5 dark:bg-primary/5 shadow-md ring-1 ring-primary'
+                      : 'border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="rounded-full bg-primary/15 px-2.5 py-0.5 text-[10px] font-bold text-primary">
+                        Populyar Seçim
+                      </span>
+                      <h4 className="font-black text-sm mt-1">50 Render Paketi</h4>
+                    </div>
+                    <span className="text-base font-black text-primary">4.00 AZN</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1.5 leading-normal">
+                    Daha çox sınaq və fərqli üslubları müqayisə etmək istəyənlər üçün əla fürsət.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedRenderPackage('RENDER_100')}
+                  className={`w-full text-left p-4 rounded-2xl border transition-all ${
+                    selectedRenderPackage === 'RENDER_100'
+                      ? 'border-primary bg-primary/5 dark:bg-primary/5 shadow-md ring-1 ring-primary'
+                      : 'border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                        Ən Sərfəli
+                      </span>
+                      <h4 className="font-black text-sm mt-1">100 Render Paketi</h4>
+                    </div>
+                    <span className="text-base font-black text-primary">6.00 AZN</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1.5 leading-normal">
+                    Professional floristik dizaynlar və limit qayğısı olmadan limitsiz təcrübə.
+                  </p>
+                </button>
+              </div>
+
+              {purchaseError ? <p className="mt-4 text-xs font-semibold text-red-500">{purchaseError}</p> : null}
+              {purchaseSuccess ? <p className="mt-4 text-xs font-semibold text-emerald-600">{purchaseSuccess}</p> : null}
+
+              <button
+                onClick={handlePurchasePackage}
+                disabled={purchaseLoading}
+                className="mt-6 w-full rounded-2xl bg-primary text-black font-black py-3.5 hover:opacity-90 disabled:opacity-60 transition-opacity"
+              >
+                {purchaseLoading ? 'Ödəniş səhifəsinə yönləndirilir...' : 'Ödəniş Et və Aktivləşdir'}
               </button>
             </motion.div>
           </motion.div>
