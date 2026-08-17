@@ -15,61 +15,9 @@
       rel="stylesheet"
     />
     <title>BirBuket - Premium Çiçək Xidməti</title>
-    <style>
-      /* Indestructible CSS override to hide Google Translate bar and menu elements */
-      iframe.goog-te-banner-frame,
-      iframe[class*="goog-te-banner-frame"],
-      iframe[id*="goog-te-banner-frame"],
-      iframe[src*="translate.google.com"],
-      iframe[src*="translate.googleapis.com"],
-      iframe[class*="goog"],
-      iframe[id*="goog"],
-      .goog-te-banner-frame,
-      .goog-te-banner,
-      .goog-te-gadget-icon,
-      #goog-gt-tt,
-      .goog-tooltip,
-      .goog-tooltip:hover,
-      .skiptranslate,
-      .skiptranslate[id*="goog"],
-      iframe.skiptranslate {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        height: 0px !important;
-        min-height: 0px !important;
-        max-height: 0px !important;
-        width: 0px !important;
-        border: none !important;
-        pointer-events: none !important;
-        transform: scale(0) !important;
-      }
-      body, html {
-        top: 0px !important;
-        position: static !important;
-        margin-top: 0px !important;
-        padding-top: 0px !important;
-      }
-      .goog-text-highlight {
-        background-color: transparent !important;
-        box-shadow: none !important;
-        border: none !important;
-      }
-    </style>
   </head>
   <body>
     <div id="root"></div>
-    <div id="google_translate_element" style="display:none"></div>
-    <script type="text/javascript">
-      function googleTranslateElementInit() {
-        new google.translate.TranslateElement({
-          pageLanguage: 'az',
-          includedLanguages: 'az,ru,en,uz',
-          autoDisplay: false
-        }, 'google_translate_element');
-      }
-    </script>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
