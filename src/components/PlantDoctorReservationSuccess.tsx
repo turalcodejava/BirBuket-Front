@@ -32,10 +32,10 @@ export default function PlantDoctorReservationSuccess() {
 
           <div className="mt-8 flex items-center justify-center gap-3">
             <Link
-              to="/plant-doctor"
+              to="/bir-bagban"
               className="px-5 py-3 rounded-xl bg-primary text-background-dark text-sm font-black hover:opacity-90"
             >
-              Plant Doctor səhifəsinə qayıt
+              BirBağban səhifəsinə qayıt
             </Link>
             <Link
               to="/"

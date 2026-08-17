@@ -276,7 +276,7 @@ export async function getPlantDoctorAdvice(params: {
 
   if (!ai) return fallback;
 
-  const prompt = `Sən təcrübəli bitki həkimisən. Azərbaycan dilində qısa və praktik cavab ver.
+  const prompt = `Sən BirBağban xidmətinin təcrübəli professional bağbanısan. Azərbaycan dilində qısa və praktik cavab ver.
 Bitki növü: ${params.plantType || "Bilinmir"}
 Simptomlar: ${params.symptoms || "Qeyd edilməyib"}
 

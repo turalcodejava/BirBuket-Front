@@ -36,7 +36,7 @@ export default function TermsOfUse() {
             <h2>1. Ümumi Xidmət Şərtləri</h2>
           </div>
           <p className="text-sm text-floral-muted dark:text-white/70 leading-relaxed">
-            Bizim platforma vasitəsilə siz premium buketlər sifariş verə, Bouquet Studio alətindən istifadə edərək öz buketinizi dizayn edə və Bitki Həkimi xidmətlərindən yararlana bilərsiniz. Sifariş verərkən təqdim etdiyiniz məlumatların doğruluğuna görə birbaşa məsuliyyət daşıyırsınız.
+            Bizim platforma vasitəsilə siz premium buketlər sifariş verə, Bouquet Studio alətindən istifadə edərək öz buketinizi dizayn edə və BirBağban xidmətlərindən yararlana bilərsiniz. Sifariş verərkən təqdim etdiyiniz məlumatların doğruluğuna görə birbaşa məsuliyyət daşıyırsınız.
           </p>
         </section>
 

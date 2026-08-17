@@ -120,6 +120,7 @@ export default function PlantDoctorReservation() {
   const [visitDate, setVisitDate] = useState('');
   const [slot, setSlot] = useState<(typeof timeSlots)[number]>('12:00 - 15:00');
   const [notes, setNotes] = useState('');
+  const [serviceType, setServiceType] = useState('Budama və ümumi baxım');
   const [savedAddresses, setSavedAddresses] = useState<
     Array<{ id: number; fullAddressLine: string; phoneNumber: string; latitude: number | null; longitude: number | null }>
   >([]);
@@ -414,8 +415,8 @@ export default function PlantDoctorReservation() {
 
       const res = await plantDoctorService.createHomeVisitReservation({
         userId,
-        plantType: 'Ev bitkisi',
-        symptoms: notes.trim() || 'Evə həkim çağırışı üçün ümumi baxım sorğusu',
+        plantType: serviceType,
+        symptoms: notes.trim() || 'Eve bağban çağırışı üçün ümumi baxım sorğusu',
         addressId: effectiveAddressId,
         phoneNumber: effectiveAddressId ? undefined : manualPhone,
         fullAddressLine: effectiveAddressId ? undefined : manualFullAddress,
@@ -427,7 +428,7 @@ export default function PlantDoctorReservation() {
         // create diagnosis request-ində visitDate + visitTimeSlot sahələri ilə göndərilir.
         visitDate,
         visitTimeSlot: slotMap[slot],
-        specialNote: notes.trim(),
+        specialNote: `[Xidmət: ${serviceType}] ${notes.trim()}`,
         saveAddress: saveAddress && !selectedAddress && !effectiveAddressId,
       });
       setServerPricing({
@@ -437,7 +438,7 @@ export default function PlantDoctorReservation() {
         totalFee: Number(res?.data?.totalFee ?? 0),
       });
       const confirmationPhone = selectedAddress?.phoneNumber || manualPhone;
-      navigate('/plant-doctor/reservation/success', {
+      navigate('/bir-bagban/reservation/success', {
         state: { phoneNumber: confirmationPhone },
       });
     } catch (err: any) {
@@ -451,12 +452,12 @@ export default function PlantDoctorReservation() {
     <div className="bg-background-light dark:bg-background-dark min-h-screen">
       <main className="mx-auto max-w-[1200px] px-6 lg:px-10 py-10">
         <div className="mb-10">
-          <Link to="/plant-doctor" className="flex items-center gap-2 text-primary text-sm font-medium mb-4 hover:underline">
+          <Link to="/bir-bagban" className="flex items-center gap-2 text-primary text-sm font-medium mb-4 hover:underline">
             <ArrowLeft className="w-4 h-4" />
             Geri qayıt
           </Link>
-          <h1 className="text-3xl font-black">Evə Həkim Çağırışı Rezervasiyası</h1>
-          <p className="text-slate-500 mt-2">Məlumatları doldurun və mütəxəssisimiz bitkilərinizə yerində qulluq etsin.</p>
+          <h1 className="text-3xl font-black">Eve Bağban Çağırışı</h1>
+          <p className="text-slate-500 mt-2">Məlumatları doldurun və peşəkar bağbanımız bitkilərinizə yerində qulluq etsin.</p>
         </div>
 
         <form className="grid grid-cols-1 lg:grid-cols-12 gap-12" onSubmit={handleSubmit}>
@@ -711,12 +712,27 @@ export default function PlantDoctorReservation() {
                 <div className="w-10 h-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold">4</div>
                 <h2 className="text-xl font-bold flex items-center gap-2">
                   <FileText className="w-5 h-5 text-primary" />
-                  Xüsusi qeydlər
+                  Xidmət seçimi və xüsusi qeydlər
                 </h2>
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-1.5">Aqronom üçün əlavə qeydlər</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full rounded-lg border-primary/20 bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary px-4 py-3" placeholder="Bitkilərin vəziyyəti və ya xüsusi istəkləriniz haqqında qeyd edin..." rows={4} />
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Tələb olunan xidmət növü</label>
+                  <select
+                    value={serviceType}
+                    onChange={(e) => setServiceType(e.target.value)}
+                    className="w-full rounded-lg border-primary/20 bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary px-4 py-3"
+                  >
+                    <option value="Budama və ümumi baxım">Budama və ümumi baxım</option>
+                    <option value="Torpaq dəyişdirilməsi və gübrələmə">Torpaq dəyişdirilməsi və gübrələmə</option>
+                    <option value="Dizayn və Landşaft">Dizayn və Landşaft</option>
+                    <option value="Zərərvericilərlə mübarizə">Zərərvericilərlə mübarizə</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5">Bağban üçün əlavə qeydlər</label>
+                  <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full rounded-lg border-primary/20 bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary px-4 py-3" placeholder="Bitkilərin vəziyyəti və ya xüsusi istəkləriniz haqqında qeyd edin..." rows={4} />
+                </div>
               </div>
             </section>
 
@@ -804,7 +820,7 @@ export default function PlantDoctorReservation() {
                 </div>
                 <div>
                   <p className="text-sm font-bold leading-none">Leyla xanım</p>
-                  <p className="text-[10px] text-primary mt-1 uppercase tracking-wider font-bold">Sizin Aqronomunuz</p>
+                  <p className="text-[10px] text-primary mt-1 uppercase tracking-wider font-bold">Sizin Bağbanınız</p>
                 </div>
               </div>
             </div>

@@ -36,7 +36,7 @@ export default function AdminCategories() {
         const defaults = [
           { id: 2, title: 'Təbii güllər', subtitle: 'Sevdikləriniz üçün təzə və ətirli seçimlər', imageUrl: 'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=300&q=80' },
           { id: 3, title: 'Dibçək gülləri', subtitle: 'Uzunömürlü və baxımı asan yaşıl bitkilər', imageUrl: 'https://images.unsplash.com/photo-1587334206502-747aba2e8c25?auto=format&fit=crop&w=300&q=80' },
-          { id: 4, title: 'Bitki Sağlamlığı', subtitle: 'Bitkilərinizin həkimi və professional qulluq', imageUrl: 'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?auto=format&fit=crop&w=300&q=80' }
+          { id: 4, title: 'Bitki Sağlamlığı', subtitle: 'Bitkilərinizin bağbanı və professional qulluq', imageUrl: 'https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?auto=format&fit=crop&w=300&q=80' }
         ];
         setCategories(defaults);
         localStorage.setItem(MOCK_CATEGORIES_KEY, JSON.stringify(defaults));

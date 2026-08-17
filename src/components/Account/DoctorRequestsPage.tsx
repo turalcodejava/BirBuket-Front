@@ -181,7 +181,7 @@ export default function DoctorRequestsPage() {
   return (
     <section>
       <div className="mb-8 flex items-center justify-between">
-        <h2 className="text-2xl font-black text-floral-deep dark:text-floral-deep-dark">Həkim müraciət və rezervasiyalarım</h2>
+        <h2 className="text-2xl font-black text-floral-deep dark:text-floral-deep-dark">Bağban müraciət və rezervasiyalarım</h2>
         <span className="rounded-xl bg-primary/15 px-3 py-1 text-xs font-black text-primary">
           Cəmi: {countInfo.total}
         </span>
@@ -223,8 +223,8 @@ export default function DoctorRequestsPage() {
       ) : filteredRows.length === 0 ? (
         <div className="rounded-3xl border border-floral-muted/10 bg-white p-6 text-sm text-floral-muted dark:border-white/10 dark:bg-white/5">
           {activeTab === 'consultations'
-            ? 'Hələ həkimə onlayn müraciət yoxdur.'
-            : 'Hələ evə həkim rezervasiyası yoxdur.'}
+            ? 'Hələ bağbana onlayn müraciət yoxdur.'
+            : 'Hələ evə bağban rezervasiyası yoxdur.'}
         </div>
       ) : (
         <div className="space-y-4">
@@ -239,7 +239,7 @@ export default function DoctorRequestsPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="text-sm font-black text-floral-deep dark:text-white">
-                    {row.kind === 'CONSULTATION' ? 'Onlayn həkim müraciəti' : 'Evə həkim rezervasiyası'} #{row.id}
+                    {row.kind === 'CONSULTATION' ? 'Onlayn bağban müraciəti' : 'Evə bağban rezervasiyası'} #{row.id}
                   </p>
                   <p className="mt-1 text-xs text-floral-muted dark:text-white/60">
                     {row.createdAt ? new Date(row.createdAt).toLocaleString('az-AZ') : '-'}
@@ -267,7 +267,7 @@ export default function DoctorRequestsPage() {
 
               {row.response ? (
                 <div className="mt-3 rounded-2xl border border-emerald-200/70 bg-emerald-50/60 p-3 text-sm text-emerald-900 dark:border-emerald-900/40 dark:bg-emerald-950/20 dark:text-emerald-200">
-                  <p className="mb-1 text-xs font-black uppercase tracking-wide">Həkim cavabı</p>
+                  <p className="mb-1 text-xs font-black uppercase tracking-wide">Bağban cavabı</p>
                   <p>{row.response}</p>
                 </div>
               ) : null}

@@ -8,7 +8,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from 'react';
-import { CheckCircle2, Loader2, MessageSquareReply, RefreshCw, Sparkles, Stethoscope, Home } from 'lucide-react';
+import { CheckCircle2, Loader2, MessageSquareReply, RefreshCw, Sparkles, Sprout, Home } from 'lucide-react';
 import { parsePlantDoctorApiError, plantDoctorService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -966,7 +966,7 @@ export default function AgronomistPanel() {
       </span>
     ) : (
       <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wide text-sky-800 dark:bg-sky-900/40 dark:text-sky-200">
-        <Stethoscope className="h-3 w-3" />
+        <Sprout className="h-3 w-3" />
         Onlayn sual
       </span>
     );
@@ -1229,7 +1229,7 @@ export default function AgronomistPanel() {
   const mainSubtitle =
     sidebarModule === 'home_visit'
       ? 'Ev ziyarəti: əvvəl təsdiq (PENDING → RESERVED, istifadəçiyə bildiriş), sonra ziyarətdən sonra Tamamla (COMPLETED).'
-      : 'Həkimə onlayn müraciətlər — oxunmamış növbə və cavablanmış tarixçə.';
+      : 'Bağbana onlayn müraciətlər — oxunmamış növbə və cavablanmış tarixçə.';
 
   const renderTamamlanmisCard = (item: DiagnosisItem) => {
     const img = resolveImageUrl(item);
@@ -1339,10 +1339,10 @@ export default function AgronomistPanel() {
                     : 'border-transparent bg-[#fdfcf7] hover:border-floral-muted/25 dark:bg-white/5 dark:hover:bg-white/10'
                 }`}
               >
-                <Stethoscope className="h-5 w-5 shrink-0 text-sky-600" />
+                <Sprout className="h-5 w-5 shrink-0 text-sky-600" />
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
-                    <span className="block text-sm font-black text-[#0d1c12] dark:text-white">Həkimə müraciət</span>
+                    <span className="block text-sm font-black text-[#0d1c12] dark:text-white">Bağbana müraciət</span>
                     <span className="rounded-full bg-sky-600 px-2 py-0.5 text-[10px] font-black text-white tabular-nums">
                       {consultationSidebarCount}
                     </span>
@@ -1538,7 +1538,7 @@ export default function AgronomistPanel() {
             </div>
           : activeSection === 'PENDING' ?
             <section className="space-y-4">
-              <h2 className="text-lg font-black text-[#0d1c12] dark:text-white">Həkimə müraciət — gözləyən növbə</h2>
+              <h2 className="text-lg font-black text-[#0d1c12] dark:text-white">Bağbana müraciət — gözləyən növbə</h2>
               {sortedConsultPending.length === 0 ?
                 <div className="rounded-2xl border border-floral-muted/20 bg-white p-8 text-sm text-floral-muted dark:bg-white/5 dark:text-floral-muted-dark">
                   Oxunmamış onlayn müraciət yoxdur.

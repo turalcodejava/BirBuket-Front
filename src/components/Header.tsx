@@ -43,9 +43,9 @@ export default function Header() {
     { name: 'Kolleksiyalar', path: '/collections' },
     { name: 'BirBuketClub', path: '/birbuketclub' },
     { name: 'BirBuket Yarat', path: '/studio' },
-    { name: 'Bitki Həkimi', path: '/plant-doctor' },
+    { name: 'BirBağban', path: '/bir-bagban' },
     { name: 'Haqqımızda', path: '/about' },
-    ...(hasAgronomistRole ? [{ name: 'Agronomist Panel', path: '/agronomist' }] : []),
+    ...(hasAgronomistRole ? [{ name: 'Bağban Paneli', path: '/agronomist' }] : []),
     ...(hasFloristRole ? [{ name: 'Florist Panel', path: '/florist' }] : []),
   ];
 

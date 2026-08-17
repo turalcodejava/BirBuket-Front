@@ -239,9 +239,9 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route path="/collections" element={<Collections />} />
           <Route path="/studio" element={<BouquetStudio />} />
-          <Route path="/plant-doctor" element={<PlantDoctor />} />
-          <Route path="/plant-doctor/reservation" element={<PlantDoctorReservation />} />
-          <Route path="/plant-doctor/reservation/success" element={<PlantDoctorReservationSuccess />} />
+          <Route path="/bir-bagban" element={<PlantDoctor />} />
+          <Route path="/bir-bagban/reservation" element={<PlantDoctorReservation />} />
+          <Route path="/bir-bagban/reservation/success" element={<PlantDoctorReservationSuccess />} />
           <Route path="/about" element={<About />} />
           <Route path="/birbuketclub" element={<BirBuketClub />} />
           <Route path="/support" element={<SupportPage />} />
@@ -283,7 +283,7 @@ function AppContent() {
             <Route index element={<ProfileInfo />} />
             <Route path="orders" element={<OrderHistory />} />
             <Route path="favorites" element={<FavoritesPage />} />
-            <Route path="doctor-requests" element={<DoctorRequestsPage />} />
+            <Route path="bagban-muracietleri" element={<DoctorRequestsPage />} />
           </Route>
           <Route
             path="/admin"

@@ -5,7 +5,7 @@ import {
   ImagePlus,
   Leaf,
   Send,
-  Stethoscope,
+  Sprout,
   Sun,
   Truck,
   Upload,
@@ -80,7 +80,7 @@ export default function PlantDoctor() {
     setAdviceError(null);
     setRequestNotice(null);
     if (!token) {
-      navigate('/login', { state: { message: 'Diaqnoz müraciəti üçün əvvəlcə daxil olun.' } });
+      navigate('/login', { state: { message: 'Bağbana sual vermək üçün əvvəlcə daxil olun.' } });
       return;
     }
     if (!plantType.trim()) {
@@ -92,7 +92,7 @@ export default function PlantDoctor() {
       return;
     }
     if (!selectedFile) {
-      setAdviceError('Həkim üçün şəkil əlavə edin (JPG və ya PNG).');
+      setAdviceError('Bağban üçün şəkil əlavə edin (JPG və ya PNG).');
       return;
     }
 
@@ -100,7 +100,7 @@ export default function PlantDoctor() {
     try {
       const effectiveUserId = await resolveEffectiveUserId();
       if (!effectiveUserId) {
-        navigate('/login', { state: { message: 'Diaqnoz müraciəti üçün əvvəlcə daxil olun.' } });
+        navigate('/login', { state: { message: 'Bağbana sual vermək üçün əvvəlcə daxil olun.' } });
         return;
       }
 
@@ -112,14 +112,14 @@ export default function PlantDoctor() {
       });
       setRequestNotice(
         response?.message ||
-          'Müraciətiniz qeydə alındı. Tezliklə emailinizə cavab göndəriləcək.'
+          'Sualınız bağbana yönləndirildi. Tezliklə cavablandırılacaq.'
       );
       setPlantType('');
       setSymptoms('');
       setSelectedFile(null);
       setPreviewUrl(null);
     } catch (err: any) {
-      setAdviceError(err?.response?.data?.message || 'Müraciət göndərilmədi. Zəhmət olmasa yenidən cəhd edin.');
+      setAdviceError(err?.response?.data?.message || 'Sual göndərilmədi. Zəhmət olmasa yenidən cəhd edin.');
     } finally {
       setLoadingAdvice(false);
     }
@@ -135,11 +135,11 @@ export default function PlantDoctor() {
               Peşəkar dəstək
             </span>
             <h1 className="text-white text-4xl lg:text-5xl font-black leading-tight mb-4">
-              Bitkiniz xəstədir?
+              Bitkiniz solur?
             </h1>
             <p className="text-white/80 text-lg max-w-2xl">
-              Mütəxəssis komandamız bitkilərinizin sağlamlığını bərpa etmək üçün buradadır.
-              Şəkil və məlumat göndərin, ilkin diaqnozla sizə geri dönüş edək.
+              Peşəkar bağbanlarımız bitkilərinizin sağlamlığını bərpa etmək üçün buradadır.
+              Şəkil və məlumat göndərin, BirBağban tövsiyələri ilə sizə geri dönüş edək.
             </p>
           </div>
         </section>
@@ -179,12 +179,12 @@ export default function PlantDoctor() {
                   <Home className="w-5 h-5" />
                 </span>
                 <h2 className="text-2xl font-black text-floral-deep dark:text-floral-deep-dark">
-                  Evə həkim çağır
+                  Eve Bağban Çağır
                 </h2>
               </div>
               <p className="text-floral-muted dark:text-floral-muted-dark leading-relaxed">
-                Bitkilərinizə yerində qulluq lazımdırsa, komandamız ünvanınıza gəlib diaqnostika,
-                torpaq yenilənməsi və ümumi baxım üzrə dəstək verir.
+                Bitkilərinizə yerində professional qulluq lazımdırsa, bağbanımız ünvanınıza gəlib
+                budama, torpaq yenilənməsi, transplantasiya və ümumi baxım üzrə dəstək verir.
               </p>
               <ul className="mt-5 space-y-2 text-sm font-semibold text-floral-deep dark:text-floral-deep-dark">
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary" /> Sağlamlıq diaqnostikası</li>
@@ -193,7 +193,7 @@ export default function PlantDoctor() {
               </ul>
               <button
                 type="button"
-                onClick={() => navigate('/plant-doctor/reservation')}
+                onClick={() => navigate('/bir-bagban/reservation')}
                 className="mt-6 inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-black text-floral-deep hover:opacity-90 transition-opacity"
               >
                 <ClipboardPlus className="w-4 h-4" />
@@ -236,10 +236,10 @@ export default function PlantDoctor() {
           <aside className="lg:col-span-1">
             <div className="rounded-[24px] border border-floral-muted/15 bg-white dark:bg-white/5 p-6 lg:sticky lg:top-24">
               <h3 className="text-xl font-black text-floral-deep dark:text-floral-deep-dark">
-                Həkimə sual ver
+                Bağbana sual ver
               </h3>
               <p className="text-sm text-floral-muted dark:text-floral-muted-dark mt-2 mb-5">
-                Formu doldurun, komandamız sizinlə əlaqə saxlasın.
+                Sualınızı göndərin, peşəkar bağbanımız cavablandırsın.
               </p>
 
               <form className="space-y-4" onSubmit={handleConsultationSubmit}>
@@ -296,11 +296,11 @@ export default function PlantDoctor() {
               )}
               <div className="mt-6 pt-5 border-t border-floral-muted/15 flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-                  <Stethoscope className="w-5 h-5" />
+                  <Sprout className="w-5 h-5" />
                 </div>
                 <div>
                   <p className="text-sm font-black text-floral-deep dark:text-floral-deep-dark">Günel xanım</p>
-                  <p className="text-xs text-primary">Baş aqronom</p>
+                  <p className="text-xs text-primary">Baş Bağban</p>
                 </div>
               </div>
             </div>

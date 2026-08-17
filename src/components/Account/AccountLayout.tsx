@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Heart, LogOut, MapPin, Package, Stethoscope, User as UserIcon } from 'lucide-react';
+import { Heart, LogOut, MapPin, Package, Sprout, User as UserIcon } from 'lucide-react';
 import React from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -8,7 +8,7 @@ const menuItems = [
   { icon: UserIcon, label: 'Profil məlumatlarım', to: '/account', end: true },
   { icon: Package, label: 'Sifariş tarixçəm', to: '/account/orders' },
   { icon: Heart, label: 'Sevimlilərim', to: '/account/favorites' },
-  { icon: Stethoscope, label: 'Həkim müraciətləri', to: '/account/doctor-requests' },
+  { icon: Sprout, label: 'Bağban müraciətləri', to: '/account/bagban-muracietleri' },
 ];
 
 export default function AccountLayout() {
