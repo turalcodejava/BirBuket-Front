@@ -41,6 +41,7 @@ import AdminSettings from './components/Admin/AdminSettings';
 import AdminLiveChat from './components/Admin/AdminLiveChat';
 import AdminRenderManagement from './components/Admin/AdminRenderManagement';
 import AdminClubManagement from './components/Admin/AdminClubManagement';
+import AdminCategories from './components/Admin/AdminCategories';
 import AgronomistPanel from './components/Agronomist/AgronomistPanel';
 import FloristPanel from './components/Florist/FloristPanel';
 import CourierPanel from './components/Courier/CourierPanel';
@@ -300,6 +301,7 @@ function AppContent() {
             <Route path="settings" element={<AdminSettings />} />
             <Route path="render-management" element={<AdminRenderManagement />} />
             <Route path="club-management" element={<AdminClubManagement />} />
+            <Route path="categories" element={<AdminCategories />} />
           </Route>
           <Route
             path="/agronomist"

@@ -13,7 +13,8 @@ import {
   Users,
   MessageCircle,
   Settings,
-  Gift
+  Gift,
+  FolderOpen
 } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -71,7 +72,7 @@ export default function AdminDashboard() {
         {/* Sürətli Keçidlər */}
         <section className="rounded-2xl border border-floral-muted/10 bg-white dark:bg-white/5 p-6 shadow-sm">
           <h3 className="text-base font-black mb-3">İdarəetmə Paneli Hızlı Keçidləri</h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
             <button
               onClick={() => navigate('/admin/orders')}
               className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-primary/10 transition-all text-center bg-white dark:bg-slate-900 shadow-sm hover:scale-[1.02]"
@@ -85,6 +86,13 @@ export default function AdminDashboard() {
             >
               <Boxes className="size-6 text-primary mb-2" />
               <span className="text-xs font-bold">Məhsullar</span>
+            </button>
+            <button
+              onClick={() => navigate('/admin/categories')}
+              className="flex flex-col items-center justify-center p-4 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-primary/10 transition-all text-center bg-white dark:bg-slate-900 shadow-sm hover:scale-[1.02]"
+            >
+              <FolderOpen className="size-6 text-primary mb-2" />
+              <span className="text-xs font-bold">Kateqoriyalar</span>
             </button>
             <button
               onClick={() => navigate('/admin/customers')}

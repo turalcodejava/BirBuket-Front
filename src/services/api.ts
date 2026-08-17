@@ -1085,9 +1085,33 @@ export const categoryService = {
     return res.data;
   },
   getAll: async () => {
-    // If backend supports it, otherwise manually defined
     const res = await apiClient.get<APIResponse<Category[]>>('/api/category');
     return res.data;
+  },
+  saveCategory: async (category: any) => {
+    const id = category.id;
+    if (id) {
+      const candidates = [`/api/category/${id}`, `/api/category`];
+      let lastError: any = null;
+      for (const endpoint of candidates) {
+        try {
+          const res = endpoint.includes(String(id))
+            ? await apiClient.put<any>(endpoint, category, { headers: getAuthHeaders() })
+            : await apiClient.post<any>(endpoint, category, { headers: getAuthHeaders() });
+          return res.data?.data ?? res.data ?? null;
+        } catch (err: any) {
+          lastError = err;
+        }
+      }
+      throw lastError;
+    } else {
+      const res = await apiClient.post<any>('/api/category', category, { headers: getAuthHeaders() });
+      return res.data?.data ?? res.data ?? null;
+    }
+  },
+  deleteCategory: async (id: number) => {
+    const res = await apiClient.delete<any>(`/api/category/${id}`, { headers: getAuthHeaders() });
+    return res.data?.data ?? res.data ?? null;
   }
 };
 
