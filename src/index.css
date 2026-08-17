@@ -146,34 +146,5 @@
   }
 }
 
-/* Hide Google Translate top bar, menu frames, and banners completely */
-iframe.goog-te-banner-frame,
-iframe[class*="goog-te-banner-frame"],
-iframe[id*="goog-te-banner-frame"],
-iframe[src*="translate.google.com"],
-iframe[src*="translate.googleapis.com"],
-iframe[class*="goog"],
-iframe[id*="goog"],
-.goog-te-banner-frame,
-.goog-te-banner,
-.goog-te-gadget-icon,
-#goog-gt-tt,
-.goog-tooltip,
-.goog-tooltip:hover,
-.skiptranslate[id*="goog"],
-iframe.skiptranslate {
-  display: none !important;
-  visibility: hidden !important;
-}
 
-body {
-  top: 0px !important;
-  position: static !important;
-}
-
-.goog-text-highlight {
-  background-color: transparent !important;
-  box-shadow: none !important;
-  border: none !important;
-}
 

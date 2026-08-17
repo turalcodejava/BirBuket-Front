@@ -110,42 +110,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return 'az';
   });
 
-  useEffect(() => {
-    const cookieValue = language === 'az' ? '/az/az' : `/az/${language}`;
-    const match = document.cookie.match(/(^|;)\s*googtrans\s*=\s*([^;]+)/);
-    if (!match || decodeURIComponent(match[2]) !== cookieValue) {
-      document.cookie = `googtrans=${cookieValue}; path=/;`;
-      document.cookie = `googtrans=${cookieValue}; path=/; domain=${window.location.hostname};`;
-    }
-
-    // Actively hide Google Translate elements and reset body top offset
-    const interval = setInterval(() => {
-      const frames = document.querySelectorAll(
-        'iframe.goog-te-banner-frame, iframe[id*="goog-te-banner-frame"], .goog-te-banner-frame, .goog-te-banner, #goog-gt-tt, .goog-tooltip'
-      );
-      frames.forEach((el) => {
-        const htmlEl = el as HTMLElement;
-        htmlEl.style.display = 'none';
-        htmlEl.style.visibility = 'hidden';
-      });
-      if (document.body && document.body.style.top !== '0px') {
-        document.body.style.top = '0px';
-      }
-      if (document.documentElement && document.documentElement.style.top !== '0px') {
-        document.documentElement.style.top = '0px';
-      }
-    }, 200);
-
-    return () => clearInterval(interval);
-  }, [language]);
-
   const changeLanguage = (lang: Language) => {
     setLanguage(lang);
     localStorage.setItem('language', lang);
-    const cookieValue = lang === 'az' ? '/az/az' : `/az/${lang}`;
-    document.cookie = `googtrans=${cookieValue}; path=/;`;
-    document.cookie = `googtrans=${cookieValue}; path=/; domain=${window.location.hostname};`;
-    window.location.reload();
   };
 
   const t = (key: keyof typeof translations['az']): string => {
