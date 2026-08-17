@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 type Language = 'az' | 'ru' | 'en' | 'uz';
 
@@ -30,6 +30,17 @@ const translations = {
     services_title: "Xidmətlərimiz",
     services_subtitle: "Sizin üçün ən yaxşı xidməti təklif etmək məqsədilə hər detala diqqət yetiririk.",
     loading_api: "Məlumatlar API-dan alınır...",
+    
+    // Hero Section
+    premium_service: "Premium Çiçək Xidməti",
+    hero_title_1: "Hər Çiçəkdə",
+    hero_title_italic: "Bir Hekayə",
+    hero_title_2: "Var",
+    hero_desc: "Təbii güllər, estetik dibçək bitkiləri və unudulmaz tədbirləriniz üçün xüsusi dizayn edilmiş dekorasiyalar. Sizin sevginizi çiçəklərlə ifadə edirik.",
+    order_now: "İndi sifariş et",
+    view_collections: "Kolleksiyalara bax",
+    fresh_species: "45+ növ",
+    fresh_desc: "Təzə kəsilmiş gül növləri hər gün anbarda",
   },
   ru: {
     home: "Главная",
@@ -52,6 +63,17 @@ const translations = {
     services_title: "Наши услуги",
     services_subtitle: "Мы уделяем внимание каждой детали, чтобы предложить вам наилучший сервис.",
     loading_api: "Получение данных из API...",
+    
+    // Hero Section
+    premium_service: "Премиальный цветочный сервис",
+    hero_title_1: "В каждом цветке",
+    hero_title_italic: "своя история",
+    hero_title_2: "есть",
+    hero_desc: "Свежие цветы, эстетичные комнатные растения и авторские декорации для ваших незабываемых событий. Выражаем вашу любовь цветами.",
+    order_now: "Заказать сейчас",
+    view_collections: "Смотреть коллекции",
+    fresh_species: "45+ видов",
+    fresh_desc: "Свежесрезанные сорта цветов каждый день в наличии",
   },
   en: {
     home: "Home",
@@ -74,6 +96,17 @@ const translations = {
     services_title: "Our Services",
     services_subtitle: "We pay attention to every detail to offer you the best service.",
     loading_api: "Fetching data from API...",
+    
+    // Hero Section
+    premium_service: "Premium Flower Service",
+    hero_title_1: "In Every Flower",
+    hero_title_italic: "A Story",
+    hero_title_2: "There Is",
+    hero_desc: "Fresh flowers, aesthetic indoor plants and custom-designed decorations for your unforgettable events. We express your love with flowers.",
+    order_now: "Order now",
+    view_collections: "View collections",
+    fresh_species: "45+ species",
+    fresh_desc: "Freshly cut flower species in stock daily",
   },
   uz: {
     home: "Bosh sahifa",
@@ -96,6 +129,17 @@ const translations = {
     services_title: "Xizmatlarimiz",
     services_subtitle: "Sizga eng yaxshi xizmatni taklif qilish uchun har bir detalga e'tibor qaratamiz.",
     loading_api: "API'dan ma'lumot yuklanmoqda...",
+    
+    // Hero Section
+    premium_service: "Premium guldasta xizmati",
+    hero_title_1: "Har bir gulda",
+    hero_title_italic: "bir hikoya",
+    hero_title_2: "bor",
+    hero_desc: "Tabiiy gullar, estetik xona o'simliklari va unutilmas tadbirlaringiz uchun maxsus dizayn qilingan bezaklar. Muhabbatingizni gullar bilan ifodalaymiz.",
+    order_now: "Hozir buyurtma berish",
+    view_collections: "Kolleksiyalarni ko'rish",
+    fresh_species: "45+ turdagi",
+    fresh_desc: "Yangi kesilgan gul turlari har kuni omborda",
   }
 };
 
