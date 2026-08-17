@@ -2,6 +2,7 @@ import { Instagram, Send, Twitter } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { categoryService } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 function normalizeAz(s: string) {
   return s
@@ -24,6 +25,7 @@ function findDecorPreparationCategoryId(categories: Array<{ id: number; title: s
 }
 
 export default function Footer() {
+  const { t } = useLanguage();
   const [catalogCategories, setCatalogCategories] = useState<Array<{ id: number; title: string }>>([]);
   const [categoryRows, setCategoryRows] = useState<Array<{ id: number; title: string }>>([]);
 
@@ -66,7 +68,7 @@ export default function Footer() {
               <h3 className="text-xl font-extrabold text-floral-deep dark:text-white">BirBuket</h3>
             </div>
             <p className="text-[#4c9a66] dark:text-floral-muted-dark/80 text-sm max-w-xs leading-relaxed">
-              Bakıda ən təzə və keyfiyyətli güllərin tək ünvanı. Sevdiklərinizi sevindirmək üçün biz buradayıq.
+              {t('footer_desc')}
             </p>
             <div className="flex gap-4">
               <a
@@ -85,7 +87,7 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-col gap-5">
-            <h4 className="font-bold text-xs uppercase tracking-widest text-[#1a1a1a] dark:text-floral-deep-dark">Kataloq</h4>
+            <h4 className="font-bold text-xs uppercase tracking-widest text-[#1a1a1a] dark:text-floral-deep-dark">{t('catalog')}</h4>
             <div className="flex flex-col gap-3">
               {catalogCategories.length > 0 ? (
                 catalogCategories.map((cat) => (
@@ -102,20 +104,20 @@ export default function Footer() {
                   to="/collections"
                   className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm"
                 >
-                  Bütün Məhsullar
+                  {t('all_products')}
                 </Link>
               )}
             </div>
           </div>
 
           <div className="flex flex-col gap-5">
-            <h4 className="font-bold text-xs uppercase tracking-widest text-[#1a1a1a] dark:text-floral-deep-dark">Xidmətlər</h4>
+            <h4 className="font-bold text-xs uppercase tracking-widest text-[#1a1a1a] dark:text-floral-deep-dark">{t('services')}</h4>
             <div className="flex flex-col gap-3">
               <Link
                 to={toyDecorCollectionHref}
                 className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm"
               >
-                Toy dekorasiyası
+                {t('toy_decor')}
               </Link>
               <Link
                 className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm"
@@ -127,18 +129,18 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-col gap-5">
-            <h4 className="font-bold text-xs uppercase tracking-widest text-[#1a1a1a] dark:text-floral-deep-dark">Dəstək</h4>
+            <h4 className="font-bold text-xs uppercase tracking-widest text-[#1a1a1a] dark:text-floral-deep-dark">{t('support')}</h4>
             <div className="flex flex-col gap-3">
-              <Link className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm" to="/support#suallar">Suallar</Link>
-              <Link className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm" to="/support#catdirilma">Çatdırılma qaydaları</Link>
-              <Link className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm" to="/support#qaytarilma">Geri qaytarılma</Link>
-              <Link className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm" to="/support#elaqe">Əlaqə</Link>
+              <Link className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm" to="/support#suallar">{t('faq')}</Link>
+              <Link className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm" to="/support#catdirilma">{t('delivery_rules')}</Link>
+              <Link className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm" to="/support#qaytarilma">{t('returns')}</Link>
+              <Link className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm" to="/support#elaqe">{t('contact')}</Link>
             </div>
           </div>
 
           <div className="flex flex-col gap-5">
-            <h4 className="font-bold text-xs uppercase tracking-widest text-primary">Bizə yazın</h4>
-            <p className="text-[#4c9a66] dark:text-floral-muted-dark/60 text-xs">Yeniliklərdən və kampaniyalardan xəbərdar olun.</p>
+            <h4 className="font-bold text-xs uppercase tracking-widest text-primary">{t('write_to_us')}</h4>
+            <p className="text-[#4c9a66] dark:text-floral-muted-dark/60 text-xs">{t('newsletter_desc')}</p>
             <div className="flex rounded-lg overflow-hidden border border-black/5 dark:border-white/10 bg-[#f8f9f8] dark:bg-white/5 p-1 transition-colors">
               <input 
                 className="bg-transparent px-3 py-2 text-xs border-none focus:ring-0 w-full placeholder:text-floral-muted/50 dark:placeholder:text-white/20 dark:text-white" 
@@ -153,10 +155,10 @@ export default function Footer() {
         </div>
 
         <div className="pt-8 border-t border-black/5 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-[#4c9a66] opacity-60 text-xs">© 2024 BirBuket. Bütün hüquqlar qorunur.</p>
+          <p className="text-[#4c9a66] opacity-60 text-xs">{t('rights_reserved')}</p>
           <div className="flex gap-8 text-xs text-[#4c9a66] font-medium">
-            <Link className="hover:text-primary transition-colors" to="/privacy">Məxfilik siyasəti</Link>
-            <Link className="hover:text-primary transition-colors" to="/terms">İstifadə şərtləri</Link>
+            <Link className="hover:text-primary transition-colors" to="/privacy">{t('privacy_policy')}</Link>
+            <Link className="hover:text-primary transition-colors" to="/terms">{t('terms_of_use')}</Link>
           </div>
         </div>
       </div>
