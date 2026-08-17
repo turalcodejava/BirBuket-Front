@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 type Language = 'az' | 'ru' | 'en' | 'uz';
 
@@ -154,9 +154,49 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return 'az';
   });
 
+  useEffect(() => {
+    const cookieValue = language === 'az' ? '/az/az' : `/az/${language}`;
+    
+    // Always check cookies on load
+    const currentTrans = document.cookie.split(';').find(item => item.trim().startsWith('googtrans='));
+    if (!currentTrans || currentTrans.split('=')[1] !== cookieValue) {
+      document.cookie = `googtrans=${cookieValue}; path=/;`;
+      document.cookie = `googtrans=${cookieValue}; path=/; domain=${window.location.hostname};`;
+    }
+
+    // Extremely aggressive DOM remover and style corrector running every 50ms
+    const interval = setInterval(() => {
+      const frames = document.querySelectorAll(
+        'iframe.goog-te-banner-frame, iframe[class*="goog-te-banner-frame"], iframe[id*="goog-te-banner-frame"], iframe[src*="translate.google.com"], iframe[src*="translate.googleapis.com"], iframe[class*="goog"], iframe[id*="goog"], .goog-te-banner-frame, .goog-te-banner, .goog-te-gadget-icon, #goog-gt-tt, .goog-tooltip, .goog-tooltip:hover, .skiptranslate, .skiptranslate[id*="goog"], iframe.skiptranslate'
+      );
+      frames.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.display = 'none';
+        htmlEl.style.visibility = 'hidden';
+        htmlEl.style.height = '0px';
+        htmlEl.style.opacity = '0';
+        try { el.remove(); } catch (e) {}
+      });
+      if (document.body && (document.body.style.top !== '0px' || document.body.style.marginTop !== '0px' || document.body.style.position !== 'static')) {
+        document.body.style.top = '0px';
+        document.body.style.marginTop = '0px';
+        document.body.style.position = 'static';
+      }
+      if (document.documentElement && document.documentElement.style.top !== '0px') {
+        document.documentElement.style.top = '0px';
+      }
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [language]);
+
   const changeLanguage = (lang: Language) => {
     setLanguage(lang);
     localStorage.setItem('language', lang);
+    const cookieValue = lang === 'az' ? '/az/az' : `/az/${lang}`;
+    document.cookie = `googtrans=${cookieValue}; path=/;`;
+    document.cookie = `googtrans=${cookieValue}; path=/; domain=${window.location.hostname};`;
+    window.location.reload();
   };
 
   const t = (key: keyof typeof translations['az']): string => {
