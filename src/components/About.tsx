@@ -1,48 +1,47 @@
 import { HeartHandshake, Leaf, Truck, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
-const highlights = [
+const highlights = (t: any) => [
   {
     icon: Leaf,
-    title: 'Təzə güllər',
-    description: 'Kompozisiyalar gündəlik seçilən təzə güllərlə hazırlanır.',
+    title: t('hl_title_1'),
+    description: t('hl_desc_1'),
   },
   {
     icon: Truck,
-    title: 'Sürətli çatdırılma',
-    description:
-      'Bakı daxili çatdırılma: məsafəyə görə 5–20 AZN (4 km-ə qədər 5 AZN; 15 km-dən çox 20 AZN). Vaxtında və təhlükəsiz çatdırılma.',
+    title: t('hl_title_2'),
+    description: t('hl_desc_2'),
   },
   {
     icon: HeartHandshake,
-    title: 'Fərdi yanaşma',
-    description: 'Hər buket istəyinizə uyğun zövqlə formalaşdırılır.',
+    title: t('hl_title_3'),
+    description: t('hl_desc_3'),
   },
   {
     icon: ShieldCheck,
-    title: 'Etibarlı xidmət',
-    description: 'Sifarişdən təhvila qədər hər addımda şəffaf proses.',
+    title: t('hl_title_4'),
+    description: t('hl_desc_4'),
   },
 ];
 
 export default function About() {
+  const { t } = useLanguage();
   return (
     <div className="bg-[#fdfcf0] dark:bg-background-dark min-h-screen">
       <main className="max-w-[1440px] mx-auto px-6 lg:px-20 py-12 lg:py-16">
         <section className="rounded-[36px] border border-floral-muted/10 bg-white dark:bg-white/5 p-8 lg:p-12">
-          <p className="text-xs font-black uppercase tracking-[0.2em] text-primary">Haqqımızda</p>
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-primary">{t('about')}</p>
           <h1 className="mt-3 text-4xl lg:text-5xl font-black text-floral-deep dark:text-floral-deep-dark">
-            BirBuket - hisslərin ən zərif ifadəsi
+            {t('about_title')}
           </h1>
           <p className="mt-5 max-w-3xl text-floral-muted dark:text-floral-muted-dark leading-relaxed">
-            BirBuket olaraq məqsədimiz sevdiklərinizə çatacaq hər buketi xüsusi etməkdir.
-            Platformamız vasitəsilə siz həm sürətli sifariş verə, həm də sifarişinizin çatdırılma
-            mərhələsini rahat izləyə bilərsiniz.
+            {t('about_desc')}
           </p>
         </section>
 
         <section className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {highlights.map((item) => {
+          {highlights(t).map((item) => {
             const Icon = item.icon;
             return (
               <article
@@ -65,19 +64,19 @@ export default function About() {
 
         <section className="mt-8 rounded-[36px] border border-floral-muted/10 bg-white dark:bg-white/5 p-8 lg:p-12">
           <h2 className="text-2xl lg:text-3xl font-black text-floral-deep dark:text-floral-deep-dark">
-            Nəyə görə bizi seçirlər?
+            {t('why_choose_us')}
           </h2>
           <ul className="mt-5 space-y-3 text-floral-muted dark:text-floral-muted-dark">
-            <li>- Geniş buket çeşidləri və fərdi dizayn imkanı</li>
-            <li>- Rahat ödəniş və sadə sifariş prosesi</li>
-            <li>- Müştəri məmnuniyyətinə fokuslanan dəstək xidməti</li>
+            <li>{t('why_choose_li_1')}</li>
+            <li>{t('why_choose_li_2')}</li>
+            <li>{t('why_choose_li_3')}</li>
           </ul>
           <div className="mt-7">
             <Link
               to="/collections"
               className="inline-flex items-center rounded-2xl bg-primary px-6 py-3 font-black text-floral-deep hover:opacity-90 transition-opacity"
             >
-              Kolleksiyaya bax
+              {t('view_collections')}
             </Link>
           </div>
         </section>
