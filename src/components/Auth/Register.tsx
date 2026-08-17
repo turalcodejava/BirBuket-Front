@@ -4,8 +4,10 @@ import { Mail, Lock, ArrowRight, Flower2, User, Eye, EyeOff } from 'lucide-react
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../services/api';
 import BrandLoading from '../BrandLoading';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function Register() {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: '',
     surname: '',
@@ -100,8 +102,8 @@ export default function Register() {
           <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center mb-6">
             <Flower2 className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-black text-[#0d1c12] dark:text-floral-deep-dark mb-2">Qeydiyyat</h1>
-          <p className="text-floral-muted text-center italic">BirBuket ailəsinə qoşulun</p>
+          <h1 className="text-3xl font-black text-[#0d1c12] dark:text-floral-deep-dark mb-2">{t('register_heading')}</h1>
+          <p className="text-floral-muted text-center italic">{t('register_sub')}</p>
         </div>
 
         {error && (
@@ -113,24 +115,24 @@ export default function Register() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">Ad</label>
+              <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">{t('name_label')}</label>
               <input 
                 name="name"
                 required
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Adınız"
+                placeholder={t('name_placeholder')}
                 className="w-full px-4 py-4 bg-gray-50 dark:bg-slate-900 rounded-2xl border-none focus:ring-2 focus:ring-primary/20 dark:text-white transition-all outline-none"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">Soyad</label>
+              <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">{t('surname_label')}</label>
               <input 
                 name="surname"
                 required
                 value={formData.surname}
                 onChange={handleChange}
-                placeholder="Soyadınız"
+                placeholder={t('surname_placeholder')}
                 className="w-full px-4 py-4 bg-gray-50 dark:bg-slate-900 rounded-2xl border-none focus:ring-2 focus:ring-primary/20 dark:text-white transition-all outline-none"
               />
             </div>
@@ -138,19 +140,19 @@ export default function Register() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">Cinsiyyət</label>
+              <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">{t('gender_label')}</label>
               <select 
                 name="gender"
                 value={formData.gender}
                 onChange={(e: any) => setFormData({ ...formData, gender: e.target.value })}
                 className="w-full px-4 py-4 bg-gray-50 dark:bg-slate-900 rounded-2xl border-none focus:ring-2 focus:ring-primary/20 dark:text-white transition-all outline-none appearance-none"
               >
-                <option value="MALE">Kişi</option>
-                <option value="FEMALE">Qadın</option>
+                <option value="MALE">{t('gender_male')}</option>
+                <option value="FEMALE">{t('gender_female')}</option>
               </select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">Təvəllüd</label>
+              <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">{t('birth_date_label')}</label>
               <input 
                 name="birthDate"
                 type="date"
@@ -163,7 +165,7 @@ export default function Register() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">İstifadəçi adı</label>
+            <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">{t('username_label')}</label>
             <div className="relative">
               <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input 
@@ -178,7 +180,7 @@ export default function Register() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">Telefon nömrəsi</label>
+            <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">{t('phone_label')}</label>
             <div className="flex items-center bg-gray-50 dark:bg-slate-900 rounded-2xl focus-within:ring-2 focus-within:ring-primary/20">
               <span className="pl-4 pr-2 text-sm font-semibold text-gray-500">+994</span>
               <input
@@ -193,7 +195,7 @@ export default function Register() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">E-poçt</label>
+            <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">{t('email_label')}</label>
             <div className="relative">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input 
@@ -209,7 +211,7 @@ export default function Register() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">Şifrə</label>
+            <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">{t('password_label')}</label>
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input 
@@ -233,7 +235,7 @@ export default function Register() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">Şifrəni təsdiqlə</label>
+            <label className="text-sm font-bold text-[#0d1c12] dark:text-floral-muted-dark ml-1">{t('password_confirm_label')}</label>
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input 
@@ -262,14 +264,14 @@ export default function Register() {
             disabled={loading}
             className="w-full bg-primary text-floral-deep py-4 rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-primary/20 disabled:opacity-70 mt-4"
           >
-            {loading ? <BrandLoading compact /> : <>Hesab yarat <ArrowRight className="w-5 h-5" /></>}
+            {loading ? <BrandLoading compact /> : <>{t('register_btn')} <ArrowRight className="w-5 h-5" /></>}
           </motion.button>
         </form>
 
         <div className="mt-8 text-center">
           <p className="text-floral-muted text-sm capitalize">
-            Artıq hesabınız var?{' '}
-            <Link to="/login" className="text-primary font-bold hover:underline">Daxil olun</Link>
+            {t('already_have_account')}{' '}
+            <Link to="/login" className="text-primary font-bold hover:underline">{t('login_link')}</Link>
           </p>
         </div>
       </motion.div>

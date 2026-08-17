@@ -6,6 +6,7 @@ import { authService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import BrandLoading from '../BrandLoading';
 import { rolesFromJwtToken } from '../../utils/jwtRoles';
+import { useLanguage } from '../../context/LanguageContext';
 
 function normalizeInternalRedirect(raw: string | null): string | null {
   if (!raw || raw.length > 240) return null;
@@ -16,6 +17,7 @@ function normalizeInternalRedirect(raw: string | null): string | null {
 }
 
 export default function Login() {
+  const { t } = useLanguage();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -183,18 +185,18 @@ export default function Login() {
             </div>
 
             <h1 className="text-4xl font-black text-[#0d1c12] dark:text-floral-deep-dark leading-tight mb-4">
-              Sevdikləriniz üçün gülü seçin, sifarişi rahat izləyin
+              {t('login_hero_title')}
             </h1>
             <p className="text-floral-muted dark:text-floral-muted-dark text-lg leading-relaxed mb-8">
-              BirBuket hesabınızla buket seçin, ünvanı qeyd edin və çatdırılma statusunu addım-addım izləyin.
+              {t('login_hero_desc')}
             </p>
 
             <ul className="space-y-4">
               {[
-                'Fərdi hesabda sifariş tarixçənizi toplayın',
-                'Ünvan, alıcı və çatdırılma qeydlərini rahat idarə edin',
-                'Sifariş hazırlanır, yoldadır, çatdırıldı statuslarını izləyin',
-                'Onlayn ödəniş və sifariş detallarına bir toxunuşla baxın'
+                t('login_feat_1'),
+                t('login_feat_2'),
+                t('login_feat_3'),
+                t('login_feat_4')
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 text-sm text-[#3d5145] dark:text-white/70">
                   <span className="mt-0.5 w-5 h-5 rounded-full bg-primary/20 text-primary flex items-center justify-center">
@@ -213,9 +215,9 @@ export default function Login() {
             animate={{ opacity: 1, y: 0 }}
             className="w-full max-w-md bg-white dark:bg-white/5 backdrop-blur-xl p-8 sm:p-10 rounded-[30px] shadow-[0_22px_45px_rgba(0,0,0,0.08)] border border-[#e7ded2] dark:border-white/10"
           >
-            <h2 className="text-3xl font-black text-[#0d1c12] dark:text-floral-deep-dark mb-2">Hesabınıza daxil olun</h2>
+            <h2 className="text-3xl font-black text-[#0d1c12] dark:text-floral-deep-dark mb-2">{t('login_heading')}</h2>
             <p className="text-sm text-floral-muted dark:text-floral-muted-dark mb-6">
-              Davam etmək üçün e-poçt və şifrənizi daxil edin
+              {t('login_sub')}
             </p>
 
             {error && (
@@ -227,7 +229,7 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
                 <label className="text-xs font-black uppercase tracking-wider text-[#2f4337] dark:text-floral-muted-dark ml-1">
-                  E-poçt və ya istifadəçi adı
+                  {t('email_or_user')}
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -236,7 +238,7 @@ export default function Login() {
                     required
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Email və ya username"
+                    placeholder={t('email_or_user_placeholder')}
                     className="w-full pl-12 pr-4 py-3.5 bg-[#fcfaf6] dark:bg-slate-900 rounded-xl border border-[#efe4d5] dark:border-white/10 focus:ring-2 focus:ring-primary/20 dark:text-white transition-all outline-none"
                   />
                 </div>
@@ -245,10 +247,10 @@ export default function Login() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center ml-1">
                   <label className="text-xs font-black uppercase tracking-wider text-[#2f4337] dark:text-floral-muted-dark">
-                    Şifrə
+                    {t('password_label')}
                   </label>
                   <Link to="/forgot-password" className="text-xs text-primary font-bold hover:underline">
-                    Şifrəni unutmusunuz?
+                    {t('forgot_password')}
                   </Link>
                 </div>
                 <div className="relative">
@@ -280,7 +282,7 @@ export default function Login() {
                 <span className={`w-4 h-4 rounded border flex items-center justify-center ${rememberMe ? 'bg-primary border-primary text-[#0d1b12]' : 'border-[#cbb9a4] dark:border-white/30'}`}>
                   {rememberMe ? <Check className="w-3 h-3" /> : null}
                 </span>
-                Məni xatırla
+                {t('remember_me')}
               </button>
 
               <motion.button
@@ -289,14 +291,14 @@ export default function Login() {
                 disabled={loading}
                 className="w-full bg-primary text-floral-deep py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-70"
               >
-                {loading ? <BrandLoading compact /> : <>Daxil ol <ArrowRight className="w-4 h-4" /></>}
+                {loading ? <BrandLoading compact /> : <>{t('login')} <ArrowRight className="w-4 h-4" /></>}
               </motion.button>
             </form>
 
             <div className="mt-7 text-center">
               <p className="text-floral-muted text-sm">
-                Hesabınız yoxdur?{' '}
-                <Link to="/register" className="text-primary font-bold hover:underline">Qeydiyyatdan keçin</Link>
+                {t('dont_have_account')}{' '}
+                <Link to="/register" className="text-primary font-bold hover:underline">{t('signup_link')}</Link>
               </p>
             </div>
           </motion.div>
