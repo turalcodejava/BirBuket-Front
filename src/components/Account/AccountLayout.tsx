@@ -3,16 +3,18 @@ import { Heart, LogOut, MapPin, Package, Sprout, User as UserIcon } from 'lucide
 import React from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 const menuItems = [
-  { icon: UserIcon, label: 'Profil məlumatlarım', to: '/account', end: true },
-  { icon: Package, label: 'Sifariş tarixçəm', to: '/account/orders' },
-  { icon: Heart, label: 'Sevimlilərim', to: '/account/favorites' },
-  { icon: Sprout, label: 'Bağban müraciətləri', to: '/account/bagban-muracietleri' },
+  { icon: UserIcon, labelKey: 'profile_info', to: '/account', end: true },
+  { icon: Package, labelKey: 'order_history', to: '/account/orders' },
+  { icon: Heart, labelKey: 'favorites', to: '/account/favorites' },
+  { icon: Sprout, labelKey: 'gardener_requests', to: '/account/bagban-muracietleri' },
 ];
 
 export default function AccountLayout() {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -70,7 +72,7 @@ export default function AccountLayout() {
                     }
                   >
                     <item.icon className="w-5 h-5" />
-                    {item.label}
+                    {t(item.labelKey as any)}
                   </NavLink>
                 ))}
 
@@ -80,7 +82,7 @@ export default function AccountLayout() {
                     className="flex items-center w-full gap-4 px-5 py-4 text-xs font-bold uppercase tracking-widest rounded-2xl text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all"
                   >
                     <LogOut className="w-5 h-5" />
-                    Çıxış
+                    {t('logout')}
                   </button>
                 </div>
               </nav>

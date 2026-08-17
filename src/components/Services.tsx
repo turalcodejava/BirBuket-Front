@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { categoryService } from '../services/api';
 import { Link } from 'react-router-dom';
 import BrandLoading from './BrandLoading';
+import { useLanguage } from '../context/LanguageContext';
 
 const defaultServices = [
   {
@@ -30,6 +31,7 @@ const defaultServices = [
 ];
 
 export default function Services() {
+  const { t } = useLanguage();
   const [dynamicServices, setDynamicServices] = useState(defaultServices);
   const [loading, setLoading] = useState(true);
 
@@ -79,10 +81,10 @@ export default function Services() {
             viewport={{ once: true }}
             className="text-4xl lg:text-6xl font-black text-[#1a1a1a] dark:text-floral-deep-dark"
           >
-            Xidmətlərimiz
+            {t('services_title')}
           </motion.h2>
           <p className="text-[#4c9a66] dark:text-floral-muted-dark max-w-2xl text-lg">
-            Sizin üçün ən yaxşı xidməti təklif etmək məqsədilə hər detala diqqət yetiririk.
+            {t('services_subtitle')}
           </p>
         </div>
         

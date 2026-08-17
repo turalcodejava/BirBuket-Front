@@ -1,11 +1,14 @@
-import { Search, Sparkles, Moon, Sun, User, ShoppingBasket } from 'lucide-react';
+import { Search, Sparkles, Moon, Sun, User, ShoppingBasket, Globe } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Header() {
   const [isDark, setIsDark] = useState(false);
+  const [showLangMenu, setShowLangMenu] = useState(false);
+  const { language, changeLanguage, t } = useLanguage();
   const { user } = useAuth();
   const roleText = String(user?.role || '').toUpperCase();
   const hasAgronomistRole = roleText.includes('AGRONOMIST');
@@ -39,14 +42,14 @@ export default function Header() {
   };
 
   const navItems = [
-    { name: 'Ana Səhifə', path: '/' },
-    { name: 'Kolleksiyalar', path: '/collections' },
-    { name: 'BirBuketClub', path: '/birbuketclub' },
-    { name: 'BirBuket Yarat', path: '/studio' },
-    { name: 'BirBağban', path: '/bir-bagban' },
-    { name: 'Haqqımızda', path: '/about' },
-    ...(hasAgronomistRole ? [{ name: 'Bağban Paneli', path: '/agronomist' }] : []),
-    ...(hasFloristRole ? [{ name: 'Florist Panel', path: '/florist' }] : []),
+    { name: t('home'), path: '/' },
+    { name: t('collections'), path: '/collections' },
+    { name: t('club'), path: '/birbuketclub' },
+    { name: t('create_bouquet'), path: '/studio' },
+    { name: t('gardener'), path: '/bir-bagban' },
+    { name: t('about'), path: '/about' },
+    ...(hasAgronomistRole ? [{ name: t('bagban_panel'), path: '/agronomist' }] : []),
+    ...(hasFloristRole ? [{ name: t('florist_panel'), path: '/florist' }] : []),
   ];
 
   return (
@@ -106,6 +109,53 @@ export default function Header() {
               placeholder="Axtar..." 
               type="text"
             />
+          </div>
+
+          {/* Language Selector Dropdown */}
+          <div className="relative">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setShowLangMenu(!showLangMenu)}
+              className="p-2.5 rounded-full bg-[#f8f9f8] dark:bg-slate-800 border border-black/5 dark:border-white/5 text-floral-deep dark:text-white transition-colors flex items-center justify-center gap-1.5"
+              title="Dil Seçimi"
+            >
+              <Globe className="w-5 h-5" />
+              <span className="text-[10px] font-black uppercase tracking-wider">{language}</span>
+            </motion.button>
+
+            {showLangMenu && (
+              <div className="absolute right-0 mt-2 w-32 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 shadow-xl overflow-hidden z-50">
+                <button
+                  type="button"
+                  onClick={() => { changeLanguage('az'); setShowLangMenu(false); }}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 transition-colors ${language === 'az' ? 'text-primary' : 'text-slate-700 dark:text-slate-300'}`}
+                >
+                  Azerbaycan
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { changeLanguage('ru'); setShowLangMenu(false); }}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 transition-colors ${language === 'ru' ? 'text-primary' : 'text-slate-700 dark:text-slate-300'}`}
+                >
+                  Русский
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { changeLanguage('en'); setShowLangMenu(false); }}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 transition-colors ${language === 'en' ? 'text-primary' : 'text-slate-700 dark:text-slate-300'}`}
+                >
+                  English
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { changeLanguage('uz'); setShowLangMenu(false); }}
+                  className={`w-full text-left px-4 py-2.5 text-xs font-bold hover:bg-slate-50 dark:hover:bg-white/5 transition-colors ${language === 'uz' ? 'text-primary' : 'text-slate-700 dark:text-slate-300'}`}
+                >
+                  O'zbekcha
+                </button>
+              </div>
+            )}
           </div>
 
           <motion.button

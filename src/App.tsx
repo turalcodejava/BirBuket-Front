@@ -55,6 +55,7 @@ import { useAuth } from './context/AuthContext';
 import { Navigate } from 'react-router-dom';
 import BrandLoading from './components/BrandLoading';
 import { tokenImpliesRole } from './utils/jwtRoles';
+import { LanguageProvider } from './context/LanguageContext';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { token, loading } = useAuth();
@@ -345,11 +346,13 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <ScrollToTop />
-        <AppContent />
-      </BrowserRouter>
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <ScrollToTop />
+          <AppContent />
+        </BrowserRouter>
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
