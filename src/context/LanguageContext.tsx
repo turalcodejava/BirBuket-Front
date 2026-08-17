@@ -117,6 +117,26 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       document.cookie = `googtrans=${cookieValue}; path=/;`;
       document.cookie = `googtrans=${cookieValue}; path=/; domain=${window.location.hostname};`;
     }
+
+    // Actively hide Google Translate elements and reset body top offset
+    const interval = setInterval(() => {
+      const frames = document.querySelectorAll(
+        'iframe.goog-te-banner-frame, iframe[id*="goog-te-banner-frame"], .goog-te-banner-frame, .goog-te-banner, #goog-gt-tt, .goog-tooltip'
+      );
+      frames.forEach((el) => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.style.display = 'none';
+        htmlEl.style.visibility = 'hidden';
+      });
+      if (document.body && document.body.style.top !== '0px') {
+        document.body.style.top = '0px';
+      }
+      if (document.documentElement && document.documentElement.style.top !== '0px') {
+        document.documentElement.style.top = '0px';
+      }
+    }, 200);
+
+    return () => clearInterval(interval);
   }, [language]);
 
   const changeLanguage = (lang: Language) => {
