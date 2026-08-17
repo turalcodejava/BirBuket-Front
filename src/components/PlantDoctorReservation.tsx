@@ -120,7 +120,6 @@ export default function PlantDoctorReservation() {
   const [visitDate, setVisitDate] = useState('');
   const [slot, setSlot] = useState<(typeof timeSlots)[number]>('12:00 - 15:00');
   const [notes, setNotes] = useState('');
-  const [serviceType, setServiceType] = useState('Budama və ümumi baxım');
   const [savedAddresses, setSavedAddresses] = useState<
     Array<{ id: number; fullAddressLine: string; phoneNumber: string; latitude: number | null; longitude: number | null }>
   >([]);
@@ -415,7 +414,7 @@ export default function PlantDoctorReservation() {
 
       const res = await plantDoctorService.createHomeVisitReservation({
         userId,
-        plantType: serviceType,
+        plantType: 'Ev bitkisi',
         symptoms: notes.trim() || 'Eve bağban çağırışı üçün ümumi baxım sorğusu',
         addressId: effectiveAddressId,
         phoneNumber: effectiveAddressId ? undefined : manualPhone,
@@ -428,7 +427,7 @@ export default function PlantDoctorReservation() {
         // create diagnosis request-ində visitDate + visitTimeSlot sahələri ilə göndərilir.
         visitDate,
         visitTimeSlot: slotMap[slot],
-        specialNote: `[Xidmət: ${serviceType}] ${notes.trim()}`,
+        specialNote: notes.trim(),
         saveAddress: saveAddress && !selectedAddress && !effectiveAddressId,
       });
       setServerPricing({
@@ -712,27 +711,12 @@ export default function PlantDoctorReservation() {
                 <div className="w-10 h-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold">4</div>
                 <h2 className="text-xl font-bold flex items-center gap-2">
                   <FileText className="w-5 h-5 text-primary" />
-                  Xidmət seçimi və xüsusi qeydlər
+                  Xüsusi qeydlər
                 </h2>
               </div>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Tələb olunan xidmət növü</label>
-                  <select
-                    value={serviceType}
-                    onChange={(e) => setServiceType(e.target.value)}
-                    className="w-full rounded-lg border-primary/20 bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary px-4 py-3"
-                  >
-                    <option value="Budama və ümumi baxım">Budama və ümumi baxım</option>
-                    <option value="Torpaq dəyişdirilməsi və gübrələmə">Torpaq dəyişdirilməsi və gübrələmə</option>
-                    <option value="Dizayn və Landşaft">Dizayn və Landşaft</option>
-                    <option value="Zərərvericilərlə mübarizə">Zərərvericilərlə mübarizə</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Bağban üçün əlavə qeydlər</label>
-                  <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full rounded-lg border-primary/20 bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary px-4 py-3" placeholder="Bitkilərin vəziyyəti və ya xüsusi istəkləriniz haqqında qeyd edin..." rows={4} />
-                </div>
+              <div>
+                <label className="block text-sm font-medium mb-1.5">Bağban üçün əlavə qeydlər</label>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full rounded-lg border-primary/20 bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary px-4 py-3" placeholder="Bitkilərin vəziyyəti və ya xüsusi istəkləriniz haqqında qeyd edin..." rows={4} />
               </div>
             </section>
 
