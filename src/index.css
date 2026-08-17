@@ -145,3 +145,24 @@
     opacity: 1;
   }
 }
+
+/* Hide Google Translate top bar and banners */
+.goog-te-banner-frame.skiptranslate,
+.goog-te-banner,
+.goog-te-gadget-icon,
+#goog-gt-tt,
+.goog-tooltip,
+.goog-tooltip:hover {
+  display: none !important;
+}
+
+body {
+  top: 0px !important;
+}
+
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+

@@ -110,9 +110,22 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return 'az';
   });
 
+  useEffect(() => {
+    const cookieValue = language === 'az' ? '/az/az' : `/az/${language}`;
+    const match = document.cookie.match(/(^|;)\s*googtrans\s*=\s*([^;]+)/);
+    if (!match || decodeURIComponent(match[2]) !== cookieValue) {
+      document.cookie = `googtrans=${cookieValue}; path=/;`;
+      document.cookie = `googtrans=${cookieValue}; path=/; domain=${window.location.hostname};`;
+    }
+  }, [language]);
+
   const changeLanguage = (lang: Language) => {
     setLanguage(lang);
     localStorage.setItem('language', lang);
+    const cookieValue = lang === 'az' ? '/az/az' : `/az/${lang}`;
+    document.cookie = `googtrans=${cookieValue}; path=/;`;
+    document.cookie = `googtrans=${cookieValue}; path=/; domain=${window.location.hostname};`;
+    window.location.reload();
   };
 
   const t = (key: keyof typeof translations['az']): string => {
