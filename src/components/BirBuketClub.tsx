@@ -16,6 +16,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 const FLOWER_BG =
   'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=1920&q=80';
@@ -29,6 +30,7 @@ type SubscriptionPlan = {
 };
 
 export default function BirBuketClub() {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const { token } = useAuth();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
@@ -261,12 +263,12 @@ export default function BirBuketClub() {
               <div className="flex items-center gap-6">
                 <div className="flex items-center gap-2 text-primary cursor-pointer" onClick={() => navigate('/')}>
                   <Sparkles className="w-6 h-6" />
-                  <h2 className="text-lg font-black text-slate-900 dark:text-white">BirBuketClub</h2>
+                  <h2 className="text-lg font-black text-slate-900 dark:text-white">{t('club_title')}</h2>
                 </div>
                 <div className="hidden md:flex items-center gap-5 text-sm">
-                  <span className="font-semibold text-primary">Abunəliklər</span>
-                  <span className="text-slate-600 dark:text-slate-300 cursor-pointer hover:text-primary transition-colors" onClick={() => navigate('/collections')}>Güllər</span>
-                  <span className="text-slate-600 dark:text-slate-300 cursor-pointer hover:text-primary transition-colors" onClick={() => navigate('/studio')}>Studio</span>
+                  <span className="font-semibold text-primary">{t('club_subscriptions')}</span>
+                  <span className="text-slate-600 dark:text-slate-300 cursor-pointer hover:text-primary transition-colors" onClick={() => navigate('/collections')}>{t('club_flowers')}</span>
+                  <span className="text-slate-600 dark:text-slate-300 cursor-pointer hover:text-primary transition-colors" onClick={() => navigate('/studio')}>{t('club_studio')}</span>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -275,7 +277,7 @@ export default function BirBuketClub() {
                   onClick={() => navigate(token ? '/account' : '/login')}
                   className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary/95 transition-all"
                 >
-                  {token ? 'Hesabım' : 'Giriş'}
+                  {token ? t('profile') : t('login')}
                 </button>
               </div>
             </div>
@@ -287,13 +289,13 @@ export default function BirBuketClub() {
             <div className="flex flex-col gap-6 rounded-[2rem] border border-white/30 bg-white/40 p-8 backdrop-blur-md dark:bg-slate-900/35 dark:border-white/10">
               <div className="inline-flex w-fit items-center gap-2 rounded-full bg-primary/15 px-4 py-1 text-primary backdrop-blur-sm">
                 <Sparkles className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">Premium Xidmət</span>
+                <span className="text-xs font-bold uppercase tracking-wider">{t('premium_service')}</span>
               </div>
               <h1 className="text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight text-slate-900 dark:text-white drop-shadow-sm">
                 Evinizə Həmişə <span className="text-primary">Təravət</span> Gəlsin
               </h1>
               <p className="text-lg leading-relaxed text-slate-700 dark:text-slate-300">
-                Gül abunəliyi ilə hər həftə və ya hər ay qapınıza gələn təzə çiçəklərin sevincini yaşayın.
+                {t('club_sub_desc')}
               </p>
               <div className="flex flex-wrap gap-4">
                 <button
@@ -303,7 +305,7 @@ export default function BirBuketClub() {
                   }
                   className="rounded-xl bg-primary px-8 py-4 text-base font-bold text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
                 >
-                  İndi Başla
+                  {t('club_btn_start')}
                 </button>
                 <button
                   type="button"
@@ -312,18 +314,18 @@ export default function BirBuketClub() {
                   }
                   className="rounded-xl border-2 border-primary/30 bg-white/50 px-8 py-4 text-base font-bold text-primary backdrop-blur-sm hover:bg-white/70 dark:bg-white/10 dark:hover:bg-white/15"
                 >
-                  Abunəliyi Qurun
+                  {t('club_btn_setup')}
                 </button>
               </div>
               {mySubscription && (
                 <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-700 dark:text-green-400 mt-2">
                   <p className="text-sm font-bold flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4" />
-                    Aktiv plan: {prettyPlanName(String(mySubscription?.planCode || mySubscription?.code || ''))}
+                    {t('club_active_plan')} {prettyPlanName(String(mySubscription?.planCode || mySubscription?.code || ''))}
                   </p>
                   {mySubscription.style && (
                     <p className="text-xs mt-1 text-slate-600 dark:text-slate-300">
-                      Üslub: {mySubscription.style} | Tezlik: {mySubscription.frequency}
+                      {t('club_summary_style')} {mySubscription.style} | {t('club_summary_freq')} {mySubscription.frequency}
                     </p>
                   )}
                 </div>
@@ -349,7 +351,7 @@ export default function BirBuketClub() {
                     ))}
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-900 dark:text-white">1200+ Abunəçi</p>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">{t('club_subscribers')}</p>
                     <div className="flex text-yellow-400">
                       {[1, 2, 3, 4, 5].map((i) => (
                         <Star key={i} className="w-3.5 h-3.5 fill-current" />
@@ -364,9 +366,9 @@ export default function BirBuketClub() {
           <section id="club-plans" className="mb-20 scroll-mt-24">
             <div className="mb-10 text-center">
               <h2 className="text-3xl font-bold text-slate-900 dark:text-white drop-shadow-sm">
-                Abunəlik Planları
+                {t('club_plans_title')}
               </h2>
-              <p className="mt-2 text-slate-700 dark:text-slate-300 mb-6">Ehtiyacınıza uyğun olanı seçin</p>
+              <p className="mt-2 text-slate-700 dark:text-slate-300 mb-6">{t('club_plans_sub')}</p>
 
               {/* Çatdırılma tezliyinə görə qiyməti tənzimləmək üçün düymələr */}
               <div className="inline-flex rounded-xl bg-white/50 dark:bg-slate-900/40 p-1 border border-white/30 backdrop-blur-sm">
@@ -405,7 +407,7 @@ export default function BirBuketClub() {
               {loading ? (
                 <div className="col-span-full flex items-center justify-center gap-2 py-8 text-sm text-slate-600 dark:text-white/70">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Planlar yüklənir...
+                  {t('loading_api')}
                 </div>
               ) : (
                 normalizedPlans.map((plan, idx) => {
@@ -424,14 +426,14 @@ export default function BirBuketClub() {
                     >
                       {isPopular && (
                         <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-xs font-bold text-white uppercase tracking-widest">
-                          Populyar
+                          {t('club_popular')}
                         </div>
                       )}
                       <div className="mb-5">
                         <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                           {plan.name || prettyPlanName(plan.code)}
                         </h3>
-                        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">BirBuketClub üzvlük planı</p>
+                        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">BirBuketClub</p>
                       </div>
                       <div className="mb-7 flex items-baseline gap-1">
                         <span className="text-4xl font-black text-slate-900 dark:text-white">
@@ -465,7 +467,7 @@ export default function BirBuketClub() {
                             : 'bg-primary/15 text-primary hover:bg-primary hover:text-white'
                         }`}
                       >
-                        {isSelected ? 'Seçildi' : 'Seç'}
+                        {isSelected ? t('club_selected') : t('club_select')}
                       </button>
                     </div>
                   );
@@ -476,13 +478,13 @@ export default function BirBuketClub() {
 
           <section id="setup-wizard" className="rounded-[2.2rem] border border-white/35 bg-white/55 p-8 lg:p-10 shadow-lg backdrop-blur-lg dark:bg-slate-900/50 dark:border-white/10 scroll-mt-24">
             <div className="mb-10 text-center">
-              <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Abunəliyinizi Qurun</h2>
-              <p className="mt-2 text-slate-600 dark:text-slate-400">Cəmi 3 addımla abunəliyi tamamlayın</p>
+              <h2 className="text-3xl font-bold text-slate-900 dark:text-white">{t('club_setup_title')}</h2>
+              <p className="mt-2 text-slate-600 dark:text-slate-400">{t('club_setup_sub')}</p>
             </div>
 
             <div className="mx-auto mb-12 max-w-4xl">
               <div className="flex justify-between items-center relative">
-                {['Üslub & Tezlik', 'Məlumatlar', 'Təsdiq & Ödəniş'].map((step, idx) => {
+                {[t('club_step_1'), t('club_step_2'), t('club_step_3')].map((step, idx) => {
                   const stepNum = idx + 1;
                   const isActive = activeStep === stepNum;
                   const isCompleted = activeStep > stepNum;
@@ -527,7 +529,7 @@ export default function BirBuketClub() {
                 {activeStep === 1 && (
                   <div className="flex flex-col gap-6">
                     <div>
-                      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">1. Buket Üslubunu Seçin</h3>
+                      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">{t('club_step_style_title')}</h3>
                       <div className="grid grid-cols-2 gap-4">
                         {clubSettings.styles.map((styleObj) => {
                           const isSelectedStyle = selectedStyle === styleObj.name;
@@ -564,7 +566,7 @@ export default function BirBuketClub() {
                       </div>
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">2. Çatdırılma Tezliyi</h3>
+                      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">{t('club_step_freq_title')}</h3>
                       <div className="flex gap-4">
                         {clubSettings.frequencies.map((freq) => {
                           const isSelectedFreq = selectedFrequency === freq;
@@ -590,54 +592,54 @@ export default function BirBuketClub() {
                       onClick={() => setActiveStep(2)}
                       className="mt-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-primary dark:text-[#0d1b12] py-4 font-bold text-white shadow-md transition-all text-center w-full"
                     >
-                      Məlumatları Daxil Et (Növbəti Addım)
+                      {t('club_btn_next')}
                     </button>
                   </div>
                 )}
 
                 {activeStep === 2 && (
                   <div className="flex flex-col gap-6">
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">3. Çatdırılma Məlumatları</h3>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">{t('club_delivery_info')}</h3>
                     <div className="flex flex-col gap-4">
                       <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
-                          Alıcının Adı və Soyadı
+                          {t('club_recipient_name')}
                         </label>
                         <input
                           type="text"
                           value={recipientName}
                           onChange={(e) => setRecipientName(e.target.value)}
-                          placeholder="Məs. Əli Məmmədov"
+                          placeholder={t('club_recipient_name_placeholder')}
                           className="w-full h-11 px-4 rounded-xl border border-slate-300 dark:border-white/10 bg-white/70 dark:bg-white/5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 dark:text-white"
                         />
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
-                          Əlaqə Telefonu
+                          {t('club_phone')}
                         </label>
                         <input
                           type="text"
                           value={recipientPhone}
                           onChange={(e) => setRecipientPhone(e.target.value)}
-                          placeholder="Məs. +994 50 123 45 67"
+                          placeholder={t('club_phone_placeholder')}
                           className="w-full h-11 px-4 rounded-xl border border-slate-300 dark:border-white/10 bg-white/70 dark:bg-white/5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 dark:text-white"
                         />
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
-                          Çatdırılma Ünvanı
+                          {t('club_address')}
                         </label>
                         <textarea
                           rows={3}
                           value={deliveryAddress}
                           onChange={(e) => setDeliveryAddress(e.target.value)}
-                          placeholder="Məs. Nəsimi rayonu, Səməd Vurğun küçəsi, ev 45, mənzil 12"
+                          placeholder={t('club_address_placeholder')}
                           className="w-full p-4 rounded-xl border border-slate-300 dark:border-white/10 bg-white/70 dark:bg-white/5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 dark:text-white resize-none"
                         />
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
-                          İlk Çatdırılma Tarixi
+                          {t('club_date')}
                         </label>
                         <input
                           type="date"
@@ -653,7 +655,7 @@ export default function BirBuketClub() {
                         onClick={() => setActiveStep(1)}
                         className="flex-1 rounded-xl border border-slate-300 dark:border-white/10 py-4 font-bold text-slate-700 dark:text-slate-300 bg-white/50 dark:bg-white/5 hover:bg-white/70 dark:hover:bg-white/10 transition-all text-center"
                       >
-                        Geri
+                        {t('club_btn_prev')}
                       </button>
                       <button
                         type="button"
@@ -667,7 +669,7 @@ export default function BirBuketClub() {
                         }}
                         className="flex-1 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-primary dark:text-[#0d1b12] py-4 font-bold text-white shadow-md transition-all text-center"
                       >
-                        İrəli (Xülasə)
+                        {t('club_btn_next_summary')}
                       </button>
                     </div>
                   </div>
@@ -675,15 +677,15 @@ export default function BirBuketClub() {
 
                 {activeStep === 3 && (
                   <div className="flex flex-col gap-6">
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">4. Təsdiq & Ödəniş</h3>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">{t('club_step_confirm_title')}</h3>
                     <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-5 text-sm">
-                      <p className="font-semibold text-slate-800 dark:text-slate-200 mb-2">Abunəlik Təsdiqi:</p>
+                      <p className="font-semibold text-slate-800 dark:text-slate-200 mb-2">{t('club_confirm_sub')}</p>
                       <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">
-                        Seçdiyiniz plan üzrə hər ödəniş dövründə avtomatik yenilənmə ediləcəkdir. İlk çatdırılma <strong>{firstDeliveryDate || 'yaxın günlərdə'}</strong> tarixində yerinə yetiriləcək.
+                        {t('club_confirm_desc')}
                       </p>
                       <div className="flex items-start gap-2 text-xs text-slate-600 dark:text-slate-400">
                         <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                        <span>Floristimiz hər dəfə ən təzə mövsümi çiçəklərdən buket hazırlayacaq.</span>
+                        <span>{t('club_confirm_tip')}</span>
                       </div>
                     </div>
 
@@ -693,7 +695,7 @@ export default function BirBuketClub() {
                         onClick={() => setActiveStep(2)}
                         className="flex-1 rounded-xl border border-slate-300 dark:border-white/10 py-4 font-bold text-slate-700 dark:text-slate-300 bg-white/50 dark:bg-white/5 hover:bg-white/70 dark:hover:bg-white/10 transition-all text-center"
                       >
-                        Geri
+                        {t('club_btn_prev')}
                       </button>
                       <button
                         type="button"
@@ -701,7 +703,7 @@ export default function BirBuketClub() {
                         disabled={Boolean(checkoutLoadingCode)}
                         className="flex-1 rounded-xl bg-primary py-4 font-bold text-white hover:bg-primary/90 disabled:opacity-60 shadow-lg shadow-primary/20 transition-all text-center"
                       >
-                        {checkoutLoadingCode === selectedPlanCode ? 'Aktiv edilir...' : 'Abunəliyi Aktiv Et'}
+                        {checkoutLoadingCode === selectedPlanCode ? t('club_btn_activating') : t('club_btn_activate')}
                       </button>
                     </div>
                   </div>
@@ -711,41 +713,41 @@ export default function BirBuketClub() {
               {/* Sağ tərəf: Sifariş Xülasəsi */}
               <div className="flex flex-col gap-7">
                 <div className="rounded-3xl border border-white/35 bg-white/45 p-7 backdrop-blur-md dark:bg-slate-900/45 dark:border-white/10">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-5">Sifariş Xülasəsi</h3>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-5">{t('club_summary_title')}</h3>
                   <div className="flex flex-col gap-3 border-b border-primary/15 pb-5 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-slate-600 dark:text-slate-400">Plan:</span>
+                      <span className="text-slate-600 dark:text-slate-400">{t('club_summary_plan')}</span>
                       <span className="font-bold text-slate-900 dark:text-white">
                         {prettyPlanName(selectedPlanDetails.code)} ({selectedPlanDetails.periodMonths} aylıq)
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-600 dark:text-slate-400">Üslub:</span>
+                      <span className="text-slate-600 dark:text-slate-400">{t('club_summary_style')}</span>
                       <span className="font-bold text-slate-900 dark:text-white">{selectedStyle}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-600 dark:text-slate-400">Tezlik:</span>
+                      <span className="text-slate-600 dark:text-slate-400">{t('club_summary_freq')}</span>
                       <span className="font-bold text-slate-900 dark:text-white">{selectedFrequency}</span>
                     </div>
                     {recipientName && (
                       <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-slate-400">Alıcı:</span>
+                        <span className="text-slate-600 dark:text-slate-400">{t('club_summary_recipient')}</span>
                         <span className="font-bold text-slate-900 dark:text-white truncate max-w-[180px]">{recipientName}</span>
                       </div>
                     )}
                     {deliveryAddress && (
                       <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-slate-400">Ünvan:</span>
+                        <span className="text-slate-600 dark:text-slate-400">{t('club_summary_address')}</span>
                         <span className="font-bold text-slate-900 dark:text-white truncate max-w-[180px]">{deliveryAddress}</span>
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-slate-600 dark:text-slate-400">Çatdırılma:</span>
-                      <span className="font-bold text-green-600 uppercase text-xs">Pulsuz</span>
+                      <span className="text-slate-600 dark:text-slate-400">{t('club_summary_delivery')}</span>
+                      <span className="font-bold text-green-600 uppercase text-xs">{t('club_summary_free')}</span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between pt-5">
-                    <span className="text-lg font-bold text-slate-900 dark:text-white">Toplam:</span>
+                    <span className="text-lg font-bold text-slate-900 dark:text-white">{t('club_summary_total')}</span>
                     <span className="text-3xl font-black text-primary">
                       {selectedPlanDetails.price} AZN
                     </span>
@@ -754,7 +756,7 @@ export default function BirBuketClub() {
                 <div className="rounded-2xl border border-white/35 bg-white/40 p-4 flex items-start gap-3 backdrop-blur-md dark:bg-slate-900/40">
                   <ShieldCheck className="w-5 h-5 mt-0.5 text-primary shrink-0" />
                   <p className="text-xs text-slate-600 dark:text-slate-400">
-                    Ödənişləriniz təhlükəsizdir. İstənilən vaxt planı dəyişə və ya dayandıra bilərsiniz.
+                    {t('club_security_tip')}
                   </p>
                 </div>
               </div>

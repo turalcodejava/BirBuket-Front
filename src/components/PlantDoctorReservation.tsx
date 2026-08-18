@@ -448,23 +448,29 @@ export default function PlantDoctorReservation() {
   };
 
   return (
-    <div className="bg-background-light dark:bg-background-dark min-h-screen">
-      <main className="mx-auto max-w-[1200px] px-6 lg:px-10 py-10">
+    <div 
+      className="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed relative text-[#e2ede6]"
+      style={{ backgroundImage: "url('/gardener-bg.jpg')", backgroundPosition: 'center' }}
+    >
+      {/* Dark overlay with low opacity to keep the background image fully clear and bright */}
+      <div className="absolute inset-0 bg-[#040f09]/20 pointer-events-none" />
+      
+      <main className="mx-auto max-w-[1200px] px-6 lg:px-10 py-10 relative z-10">
         <div className="mb-10">
           <Link to="/bir-bagban" className="flex items-center gap-2 text-primary text-sm font-medium mb-4 hover:underline">
             <ArrowLeft className="w-4 h-4" />
             Geri qayıt
           </Link>
-          <h1 className="text-3xl font-black">Eve Bağban Çağırışı</h1>
-          <p className="text-slate-500 mt-2">Məlumatları doldurun və peşəkar bağbanımız bitkilərinizə yerində qulluq etsin.</p>
+          <h1 className="text-3xl font-black text-[#051c0f]">Eve Bağban Çağırışı</h1>
+          <p className="text-[#051c0f]/80 font-medium mt-2">Məlumatları doldurun və peşəkar bağbanımız bitkilərinizə yerində qulluq etsin.</p>
         </div>
 
         <form className="grid grid-cols-1 lg:grid-cols-12 gap-12" onSubmit={handleSubmit}>
           <div className="lg:col-span-8 space-y-8">
-            <section className="bg-white dark:bg-slate-900/50 p-8 rounded-2xl border border-primary/10 shadow-sm">
+            <section className="bg-[#072415]/95 border border-[#1e5835] p-8 rounded-2xl shadow-xl">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-10 h-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold">1</div>
-                <h2 className="text-xl font-bold flex items-center gap-2">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-white">
                   <MapPin className="w-5 h-5 text-primary" />
                   Ünvan məlumatları
                 </h2>
@@ -472,11 +478,11 @@ export default function PlantDoctorReservation() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {savedAddresses.length > 0 && (
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium mb-1.5">Yaddaşdakı ünvandan seç</label>
+                    <label className="block text-sm font-medium mb-1.5 text-[#a4ccb2]">Yaddaşdakı ünvandan seç</label>
                     <select
                       value={selectedAddressId ?? ''}
                       onChange={onAddressChange}
-                      className="w-full rounded-lg border-primary/20 bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary px-4 py-3"
+                      className="w-full rounded-lg border-[#1b4b2e] bg-[#04120a] text-white focus:ring-2 focus:ring-primary/20 focus:border-primary px-4 py-3 focus:outline-none"
                     >
                       <option value="">Yeni ünvan daxil et</option>
                       {savedAddresses.map((addr) => (
@@ -488,21 +494,21 @@ export default function PlantDoctorReservation() {
                   </div>
                 )}
                 {addressLoading && (
-                  <p className="md:col-span-2 text-xs font-semibold text-floral-muted">Yaddaşdakı ünvanlar yüklənir...</p>
+                  <p className="md:col-span-2 text-xs font-semibold text-[#a4ccb2]">Yaddaşdakı ünvanlar yüklənir...</p>
                 )}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-1.5">Küçə, Bina, Mənzil</label>
+                  <label className="block text-sm font-medium mb-1.5 text-[#a4ccb2]">Küçə, Bina, Mənzil</label>
                   <input
                     value={selectedAddressId ? savedAddresses.find((x) => x.id === selectedAddressId)?.fullAddressLine || '' : address}
                     onChange={(e) => setAddress(e.target.value)}
                     disabled={Boolean(selectedAddressId)}
-                    className="w-full rounded-lg border-primary/20 bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary px-4 py-3 disabled:opacity-60"
+                    className="w-full rounded-lg border-[#1b4b2e] bg-[#04120a] text-white focus:ring-2 focus:ring-primary/20 focus:border-primary px-4 py-3 focus:outline-none disabled:opacity-60"
                     placeholder="Məs: Nizami küç. 45, m. 12"
                     type="text"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Əlaqə nömrəsi</label>
+                  <label className="block text-sm font-medium mb-1.5 text-[#a4ccb2]">Əlaqə nömrəsi</label>
                   <input
                     value={selectedAddressId ? savedAddresses.find((x) => x.id === selectedAddressId)?.phoneNumber || phone : phone}
                     onChange={(e) => setPhone(formatAzPhone(e.target.value))}
@@ -510,13 +516,13 @@ export default function PlantDoctorReservation() {
                       if (!phone.trim()) setPhone('+994');
                     }}
                     disabled={Boolean(selectedAddressId)}
-                    className="w-full rounded-lg border-primary/20 bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary px-4 py-3 disabled:opacity-60"
+                    className="w-full rounded-lg border-[#1b4b2e] bg-[#04120a] text-white focus:ring-2 focus:ring-primary/20 focus:border-primary px-4 py-3 focus:outline-none disabled:opacity-60"
                     placeholder="+994 50 000 00 00"
                     type="tel"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Xəritədən ünvan seçin</label>
+                  <label className="block text-sm font-medium mb-2 text-[#a4ccb2]">Xəritədən ünvan seçin</label>
                   <div className="mb-3 flex gap-2">
                     <input
                       type="text"
@@ -529,27 +535,27 @@ export default function PlantDoctorReservation() {
                         }
                       }}
                       placeholder="Ünvan yazın (məs: Nizami küçəsi 90, Bakı)"
-                      className="flex-1 rounded-lg border-primary/20 bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary px-4 py-3"
+                      className="flex-1 rounded-lg border-[#1b4b2e] bg-[#04120a] text-white focus:ring-2 focus:ring-primary/20 focus:border-primary px-4 py-3 focus:outline-none"
                     />
                     <button
                       type="button"
                       onClick={handleMapSearch}
                       disabled={mapSearching}
-                      className="px-4 py-3 rounded-lg bg-primary text-background-dark text-xs font-black uppercase tracking-wider disabled:opacity-70"
+                      className="px-4 py-3 rounded-lg bg-primary text-[#0d1b12] text-xs font-black uppercase tracking-wider disabled:opacity-70 transition-transform active:scale-95"
                     >
                       {mapSearching ? 'Axtarılır...' : 'Axtar'}
                     </button>
                   </div>
-                  <div className="mb-3 flex items-center justify-between rounded-xl border border-primary/20 bg-white/70 dark:bg-white/5 p-1">
-                    <span className="px-2 text-[11px] font-bold text-floral-muted">Xəritə görünüşü</span>
+                  <div className="mb-3 flex items-center justify-between rounded-xl border border-[#1b4b2e] bg-[#04120a]/40 p-1">
+                    <span className="px-2 text-[11px] font-bold text-[#a4ccb2]">Xəritə görünüşü</span>
                     <div className="flex items-center gap-1">
                       <button
                         type="button"
                         onClick={() => setMapStyle('street')}
                         className={`rounded-lg px-3 py-1.5 text-[11px] font-black transition ${
                           mapStyle === 'street'
-                            ? 'bg-primary text-background-dark shadow'
-                            : 'bg-transparent text-floral-muted hover:bg-black/5 dark:hover:bg-white/10'
+                            ? 'bg-primary text-[#0d1b12] shadow'
+                            : 'bg-transparent text-[#a4ccb2] hover:bg-black/5 dark:hover:bg-white/10'
                         }`}
                       >
                         Klassik
@@ -559,15 +565,15 @@ export default function PlantDoctorReservation() {
                         onClick={() => setMapStyle('satellite')}
                         className={`rounded-lg px-3 py-1.5 text-[11px] font-black transition ${
                           mapStyle === 'satellite'
-                            ? 'bg-primary text-background-dark shadow'
-                            : 'bg-transparent text-floral-muted hover:bg-black/5 dark:hover:bg-white/10'
+                            ? 'bg-primary text-[#0d1b12] shadow'
+                            : 'bg-transparent text-[#a4ccb2] hover:bg-black/5 dark:hover:bg-white/10'
                         }`}
                       >
                         Peyk
                       </button>
                     </div>
                   </div>
-                  <div className="h-64 rounded-xl overflow-hidden border border-primary/20">
+                  <div className="h-64 rounded-xl overflow-hidden border border-[#1b4b2e]">
                     <MapContainer center={[storeLocation.latitude, storeLocation.longitude]} zoom={12} style={{ height: '100%', width: '100%' }}>
                       <TileLayer
                         attribution={mapAttribution}
@@ -632,17 +638,17 @@ export default function PlantDoctorReservation() {
               </div>
             </section>
 
-            <section className="bg-white dark:bg-slate-900/50 p-8 rounded-2xl border border-primary/10 shadow-sm">
+            <section className="bg-[#072415]/95 border border-[#1e5835] p-8 rounded-2xl shadow-xl">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-10 h-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold">2</div>
-                <h2 className="text-xl font-bold flex items-center gap-2">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-white">
                   <Leaf className="w-5 h-5 text-primary" />
                   Bitkilərin sayı və növü
                 </h2>
               </div>
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium mb-3">Qulluq olunacaq bitki sayı</label>
+                  <label className="block text-sm font-medium mb-3 text-[#a4ccb2]">Qulluq olunacaq bitki sayı</label>
                   <div className="flex gap-4">
                     {plantCountOptions.map((option) => (
                       <button
@@ -652,7 +658,7 @@ export default function PlantDoctorReservation() {
                         className={`px-6 py-2 border rounded-lg transition-colors ${
                           plantCount === option.key
                             ? 'border-primary bg-primary/10 text-primary font-bold'
-                            : 'border-primary/20 hover:border-primary'
+                            : 'border-[#1b4b2e] hover:border-primary text-white'
                         }`}
                       >
                         {option.label}
@@ -662,18 +668,17 @@ export default function PlantDoctorReservation() {
                 </div>
               </div>
             </section>
-
-            <section className="bg-white dark:bg-slate-900/50 p-8 rounded-2xl border border-primary/10 shadow-sm">
+            <section className="bg-[#072415]/95 border border-[#1e5835] p-8 rounded-2xl shadow-xl">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-10 h-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold">3</div>
-                <h2 className="text-xl font-bold flex items-center gap-2">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-white">
                   <CalendarDays className="w-5 h-5 text-primary" />
                   Ziyarət vaxtı
                 </h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Gün seçin</label>
+                  <label className="block text-sm font-medium mb-1.5 text-[#a4ccb2]">Gün seçin</label>
                   <input
                     value={visitDate}
                     min={todayLocalDateInput()}
@@ -682,12 +687,12 @@ export default function PlantDoctorReservation() {
                       if (v && v < todayLocalDateInput()) return;
                       setVisitDate(v);
                     }}
-                    className="w-full rounded-lg border-primary/20 bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary px-4 py-3"
+                    className="w-full rounded-lg border-[#1b4b2e] bg-[#04120a] text-white focus:ring-2 focus:ring-primary/20 focus:border-primary px-4 py-3 focus:outline-none"
                     type="date"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1.5">Saat aralığı</label>
+                  <label className="block text-sm font-medium mb-1.5 text-[#a4ccb2]">Saat aralığı</label>
                   <div className="grid grid-cols-2 gap-2">
                     {timeSlots.map((s) => (
                       <button
@@ -695,7 +700,7 @@ export default function PlantDoctorReservation() {
                         type="button"
                         onClick={() => setSlot(s)}
                         className={`py-2 border rounded-lg text-sm transition-colors ${
-                          slot === s ? 'border-primary bg-primary/10 text-primary font-bold' : 'border-primary/20 hover:border-primary'
+                          slot === s ? 'border-primary bg-primary/10 text-primary font-bold' : 'border-[#1b4b2e] hover:border-primary text-white'
                         }`}
                       >
                         {s}
@@ -706,17 +711,23 @@ export default function PlantDoctorReservation() {
               </div>
             </section>
 
-            <section className="bg-white dark:bg-slate-900/50 p-8 rounded-2xl border border-primary/10 shadow-sm">
+            <section className="bg-[#072415]/95 border border-[#1e5835] p-8 rounded-2xl shadow-xl">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-10 h-10 bg-primary/20 text-primary rounded-full flex items-center justify-center font-bold">4</div>
-                <h2 className="text-xl font-bold flex items-center gap-2">
+                <h2 className="text-xl font-bold flex items-center gap-2 text-white">
                   <FileText className="w-5 h-5 text-primary" />
                   Xüsusi qeydlər
                 </h2>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">Bağban üçün əlavə qeydlər</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full rounded-lg border-primary/20 bg-background-light dark:bg-background-dark focus:ring-primary focus:border-primary px-4 py-3" placeholder="Bitkilərin vəziyyəti və ya xüsusi istəkləriniz haqqında qeyd edin..." rows={4} />
+                <label className="block text-sm font-medium mb-1.5 text-[#a4ccb2]">Bağban üçün əlavə qeydlər</label>
+                <textarea 
+                  value={notes} 
+                  onChange={(e) => setNotes(e.target.value)} 
+                  className="w-full rounded-lg border-[#1b4b2e] bg-[#04120a] text-white focus:ring-2 focus:ring-primary/20 focus:border-primary px-4 py-3 focus:outline-none" 
+                  placeholder="Bitkilərin vəziyyəti və ya xüsusi istəkləriniz haqqında qeyd edin..." 
+                  rows={4} 
+                />
               </div>
             </section>
 
@@ -731,40 +742,40 @@ export default function PlantDoctorReservation() {
           </div>
 
           <div className="lg:col-span-4">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-xl border border-primary/10 sticky top-24">
-              <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+            <div className="bg-[#072415]/95 border border-[#1d4f32] rounded-2xl p-8 shadow-xl sticky top-24">
+              <h3 className="text-xl font-bold mb-6 flex items-center gap-2 text-white">
                 <ReceiptText className="w-5 h-5 text-primary" />
                 Xidmət Xülasəsi
               </h3>
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500">Baza ziyarət haqqı</span>
-                  <span className="font-bold">
+                  <span className="text-[#a4ccb2]">Baza ziyarət haqqı</span>
+                  <span className="font-bold text-white">
                     {typeof serverPricing?.baseVisitFee === 'number' ? `${serverPricing.baseVisitFee.toFixed(2)} ₼` : '20.00 ₼'}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500">Bitki sayına görə ({plantCount} ədəd)</span>
-                  <span className="font-bold">
+                  <span className="text-[#a4ccb2]">Bitki sayına görə ({plantCount} ədəd)</span>
+                  <span className="font-bold text-white">
                     {typeof serverPricing?.plantCountFee === 'number'
                       ? `+ ${serverPricing.plantCountFee.toFixed(2)} ₼`
                       : `+ ${selectedPlantCountFee.toFixed(2)} ₼`}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500">Məsafə (xəritədən seçdikdən sonra göstəriləcək)</span>
-                  <span className="font-bold whitespace-nowrap">{typeof distanceKm === 'number' ? `${distanceKm.toFixed(2)} km` : '—'}</span>
+                  <span className="text-[#a4ccb2]">Məsafə</span>
+                  <span className="font-bold text-white whitespace-nowrap">{typeof distanceKm === 'number' ? `${distanceKm.toFixed(2)} km` : '—'}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500">Nəqliyyat (ilk 4 km pulsuz, sonra 0.80 ₼/km)</span>
-                  <span className="font-bold">
+                  <span className="text-[#a4ccb2]">Nəqliyyat (ilk 4 km pulsuz, sonra 0.80 ₼/km)</span>
+                  <span className="font-bold text-white">
                     <span className="whitespace-nowrap">
                       {typeof previewTransportFee === 'number' ? `${previewTransportFee.toFixed(2)} ₼` : '—'}
                     </span>
                   </span>
                 </div>
-                <div className="border-t border-primary/10 pt-4 flex justify-between items-center">
-                  <span className="text-lg font-bold">Ümumi məbləğ</span>
+                <div className="border-t border-[#1d4f32] pt-4 flex justify-between items-center">
+                  <span className="text-lg font-bold text-white">Ümumi məbləğ</span>
                   <span className="text-2xl font-black text-primary whitespace-nowrap">
                     {typeof serverPricing?.totalFee === 'number' ? `${serverPricing.totalFee.toFixed(2)} ₼` : `${previewTotalFee.toFixed(2)} ₼`}
                   </span>
@@ -773,27 +784,27 @@ export default function PlantDoctorReservation() {
               {serverPricing ? (
                 <div className="space-y-4 mb-8">
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-slate-500">Backend nəqliyyat haqqı</span>
-                    <span className="font-bold">
+                    <span className="text-[#a4ccb2]">Backend nəqliyyat haqqı</span>
+                    <span className="font-bold text-white">
                       {typeof serverPricing.transportFee === 'number' ? `${serverPricing.transportFee.toFixed(2)} ₼` : '—'}
                     </span>
                   </div>
                 </div>
               ) : null}
-              <div className="mb-8 rounded-xl border border-amber-400/30 bg-amber-100/20 dark:bg-amber-900/15 p-4">
-                <p className="text-xs font-semibold text-amber-700 dark:text-amber-300 leading-relaxed">
+              <div className="mb-8 rounded-xl border border-amber-500/25 bg-amber-500/10 p-4">
+                <p className="text-xs font-semibold text-amber-300 leading-relaxed">
                   Qeyd: Ünvanda istifadə olunan dərmanlara uyğun olaraq əlavə ödəniş ola bilər. Nəzərə almağınızı xahiş edirik.
                 </p>
               </div>
-              <div className="bg-primary/5 rounded-xl p-4 mb-8">
+              <div className="bg-primary/5 border border-primary/10 rounded-xl p-4 mb-8">
                 <div className="flex gap-3">
                   <Info className="w-4 h-4 text-primary mt-0.5" />
-                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                  <p className="text-xs text-[#a4ccb2] leading-relaxed">
                     Ödəniş xidmət başa çatdıqdan sonra nağd və ya kart vasitəsilə qəbul edilir. Ziyarət 24 saat əvvəldən ləğv edilə bilər.
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-4 p-4 border border-primary/10 rounded-xl bg-background-light dark:bg-background-dark">
+              <div className="flex items-center gap-4 p-4 border border-[#1b4b2e] rounded-xl bg-[#04120a]">
                 <div className="size-12 rounded-full overflow-hidden shrink-0 border-2 border-primary">
                   <img
                     alt="Leyla xanım"
@@ -803,7 +814,7 @@ export default function PlantDoctorReservation() {
                   />
                 </div>
                 <div>
-                  <p className="text-sm font-bold leading-none">Leyla xanım</p>
+                  <p className="text-sm font-bold leading-none text-white">Leyla xanım</p>
                   <p className="text-[10px] text-primary mt-1 uppercase tracking-wider font-bold">Sizin Bağbanınız</p>
                 </div>
               </div>

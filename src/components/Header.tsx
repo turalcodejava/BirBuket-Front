@@ -1,11 +1,13 @@
 import { Search, Sparkles, Moon, Sun, User, ShoppingBasket, Globe } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Header() {
+  const location = useLocation();
+  const isBirBagban = location.pathname.startsWith('/bir-bagban');
   const [isDark, setIsDark] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
   const { language, changeLanguage, t } = useLanguage();
@@ -53,7 +55,11 @@ export default function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/95 dark:bg-background-dark/90 backdrop-blur-md border-b border-floral-muted/5 dark:border-white/5 flex items-center justify-between px-4 md:px-6 lg:px-14 xl:px-20 py-3.5 transition-all duration-300">
+    <header className={`sticky top-0 z-50 w-full transition-all duration-300 flex items-center justify-between px-4 md:px-6 lg:px-14 xl:px-20 py-3.5 ${
+      isBirBagban
+        ? "bg-[#040f09]/85 backdrop-blur-md border-b border-[#143c24]"
+        : "bg-white/95 dark:bg-background-dark/90 backdrop-blur-md border-b border-floral-muted/5 dark:border-white/5"
+    }`}>
       <div className="max-w-[1440px] w-full mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-5 lg:gap-8">
           <Link to="/">
@@ -69,30 +75,40 @@ export default function Header() {
                   className="h-full w-full object-contain"
                 />
               </div>
-              <h1 className="text-xl font-extrabold tracking-tight text-floral-deep dark:text-floral-deep-dark">
+              <h1 className={`text-xl font-extrabold tracking-tight ${
+                isBirBagban ? "text-white" : "text-floral-deep dark:text-floral-deep-dark"
+              }`}>
                 BirBuket
               </h1>
             </motion.div>
           </Link>
           
-          <nav className="hidden md:flex items-center gap-1.5 rounded-full border border-floral-muted/10 dark:border-white/10 bg-[#f8f9f8] dark:bg-white/5 p-1">
+          <nav className={`hidden md:flex items-center gap-1.5 rounded-full border p-1 ${
+            isBirBagban
+              ? "border-[#143c24] bg-[#06190f]/60"
+              : "border-floral-muted/10 dark:border-white/10 bg-[#f8f9f8] dark:bg-white/5"
+          }`}>
             {navItems.map((item) => {
               const isClubSoon = item.path === '/birbuketclub';
               return (
               <NavLink 
                 key={item.name}
                 to={item.path} 
-                className={({ isActive }) =>
-                  `whitespace-nowrap rounded-full px-3 py-1.5 text-xs lg:text-sm font-semibold transition-all ${
-                    isActive && isClubSoon
-                      ? 'bg-red-500/15 text-red-600 ring-1 ring-red-500/25 dark:bg-red-500/20 dark:text-red-400 dark:ring-red-400/25'
-                      : isActive
-                        ? 'bg-primary/15 text-primary'
-                        : isClubSoon
-                          ? 'text-floral-deep/80 dark:text-floral-deep-dark/80 hover:text-red-600 dark:hover:text-red-400'
-                          : 'text-floral-deep/80 dark:text-floral-deep-dark/80 hover:text-primary dark:hover:text-primary'
-                  }`
-                }
+                className={({ isActive }) => {
+                  const base = "whitespace-nowrap rounded-full px-3 py-1.5 text-xs lg:text-sm font-semibold transition-all ";
+                  if (isBirBagban) {
+                    return base + (isActive
+                      ? 'bg-primary/20 text-primary'
+                      : 'text-[#acd5bc] hover:text-primary');
+                  }
+                  return base + (isActive && isClubSoon
+                    ? 'bg-red-500/15 text-red-600 ring-1 ring-red-500/25 dark:bg-red-500/20 dark:text-red-400 dark:ring-red-400/25'
+                    : isActive
+                      ? 'bg-primary/15 text-primary'
+                      : isClubSoon
+                        ? 'text-floral-deep/80 dark:text-floral-deep-dark/80 hover:text-red-600 dark:hover:text-red-400'
+                        : 'text-floral-deep/80 dark:text-floral-deep-dark/80 hover:text-primary dark:hover:text-primary');
+                }}
               >
                 {item.name}
               </NavLink>
@@ -102,11 +118,19 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-2.5 lg:gap-3">
-          <div className="hidden lg:flex items-center bg-[#f8f9f8] dark:bg-white/5 rounded-full px-5 py-2.5 border border-black/5 dark:border-white/10 transition-colors">
-            <Search className="text-floral-muted/40 dark:text-white/20 w-4 h-4" />
+          <div className={`hidden lg:flex items-center rounded-full px-5 py-2.5 border transition-colors ${
+            isBirBagban
+              ? "bg-[#06190f]/60 border-[#143c24]"
+              : "bg-[#f8f9f8] dark:bg-white/5 border-black/5 dark:border-white/10"
+          }`}>
+            <Search className={isBirBagban ? "text-[#a4ccb2]/45 w-4 h-4" : "text-floral-muted/40 dark:text-white/20 w-4 h-4"} />
             <input 
-              className="bg-transparent border-none focus:ring-0 text-sm w-32 md:w-48 placeholder:text-floral-muted/40 dark:placeholder:text-white/20 ml-2 dark:text-white" 
-              placeholder="Axtar..." 
+              className={`bg-transparent border-none focus:ring-0 text-sm w-32 md:w-48 ml-2 focus:outline-none ${
+                isBirBagban
+                  ? "placeholder:text-[#a4ccb2]/40 text-white"
+                  : "placeholder:text-floral-muted/40 dark:placeholder:text-white/20 dark:text-white"
+              }`} 
+              placeholder={t('about') === 'Haqqımızda' ? 'Axtar...' : 'Search...'} 
               type="text"
             />
           </div>
@@ -117,7 +141,11 @@ export default function Header() {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => setShowLangMenu(!showLangMenu)}
-              className="p-2.5 rounded-full bg-[#f8f9f8] dark:bg-slate-800 border border-black/5 dark:border-white/5 text-floral-deep dark:text-white transition-colors flex items-center justify-center gap-1.5"
+              className={`p-2.5 rounded-full border transition-colors flex items-center justify-center gap-1.5 ${
+                isBirBagban
+                  ? 'bg-[#06190f]/60 border-[#143c24] text-[#a4ccb2] hover:bg-[#143c23] hover:text-white'
+                  : 'bg-[#f8f9f8] dark:bg-slate-800 border border-black/5 dark:border-white/5 text-floral-deep dark:text-white'
+              }`}
               title="Dil Seçimi"
             >
               <Globe className="w-5 h-5" />
@@ -162,7 +190,11 @@ export default function Header() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={toggleTheme}
-            className="p-2.5 rounded-full bg-[#f8f9f8] dark:bg-slate-800 border border-black/5 dark:border-white/5 text-floral-deep dark:text-white transition-colors"
+            className={`p-2.5 rounded-full border transition-colors ${
+              isBirBagban
+                ? 'bg-[#06190f]/60 border-[#143c24] text-[#a4ccb2] hover:bg-[#143c23] hover:text-white'
+                : 'bg-[#f8f9f8] dark:bg-slate-800 border border-black/5 dark:border-white/5 text-floral-deep dark:text-white'
+            }`}
             title={isDark ? "Açıq rejima keç" : "Tünd rejima keç"}
           >
             {isDark ? <Sun className="w-5 h-5 text-yellow-400" /> : <Moon className="w-5 h-5" />}
@@ -171,12 +203,20 @@ export default function Header() {
           {user ? (
             <div className="flex items-center gap-3">
               <Link to="/cart" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                <div className="p-2.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center">
+                <div className={`p-2.5 rounded-full border flex items-center justify-center ${
+                  isBirBagban
+                    ? 'bg-[#06190f]/60 border-[#143c24] text-primary hover:bg-[#143c23]'
+                    : 'p-2.5 rounded-full bg-primary/10 text-primary border border-primary/20'
+                }`}>
                   <ShoppingBasket className="w-5 h-5" />
                 </div>
               </Link>
               <Link to="/account" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                <div className="p-2.5 rounded-full bg-primary/20 text-primary border border-primary/30 flex items-center justify-center">
+                <div className={`p-2.5 rounded-full border flex items-center justify-center ${
+                  isBirBagban
+                    ? 'bg-[#06190f]/60 border-[#143c24] text-primary hover:bg-[#143c23]'
+                    : 'p-2.5 rounded-full bg-primary/20 text-primary border border-primary/30'
+                }`}>
                   <User className="w-5 h-5" />
                 </div>
               </Link>
@@ -186,7 +226,11 @@ export default function Header() {
               <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="p-2.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center justify-center"
+                className={`p-2.5 rounded-full border flex items-center justify-center ${
+                  isBirBagban
+                    ? 'bg-[#06190f]/60 border-[#143c24] text-primary hover:bg-[#143c23]'
+                    : 'p-2.5 rounded-full bg-primary/10 text-primary border border-primary/20'
+                }`}
                 title="Daxil ol"
               >
                 <User className="w-5 h-5" />

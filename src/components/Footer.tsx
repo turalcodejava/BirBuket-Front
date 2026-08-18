@@ -1,6 +1,6 @@
 import { Instagram, Send, Twitter } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { categoryService } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -26,6 +26,8 @@ function findDecorPreparationCategoryId(categories: Array<{ id: number; title: s
 
 export default function Footer() {
   const { t } = useLanguage();
+  const location = useLocation();
+  const isBirBagban = location.pathname.startsWith('/bir-bagban');
   const [catalogCategories, setCatalogCategories] = useState<Array<{ id: number; title: string }>>([]);
   const [categoryRows, setCategoryRows] = useState<Array<{ id: number; title: string }>>([]);
 
@@ -53,7 +55,11 @@ export default function Footer() {
   }, [categoryRows]);
 
   return (
-    <footer className="px-6 lg:px-20 py-16 bg-white dark:bg-background-dark border-t border-black/5 dark:border-white/5">
+    <footer className={`px-6 lg:px-20 py-16 border-t transition-all duration-300 ${
+      isBirBagban
+        ? "bg-[#040f09]/85 backdrop-blur-md border-[#143c24]"
+        : "bg-white dark:bg-background-dark border-black/5 dark:border-white/5"
+    }`}>
       <div className="max-w-[1440px] mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-12 mb-16">
           <div className="col-span-2 flex flex-col gap-6">
@@ -65,9 +71,9 @@ export default function Footer() {
                   className="h-full w-full object-contain"
                 />
               </div>
-              <h3 className="text-xl font-extrabold text-floral-deep dark:text-white">BirBuket</h3>
+              <h3 className={`text-xl font-extrabold ${isBirBagban ? 'text-white' : 'text-floral-deep dark:text-white'}`}>BirBuket</h3>
             </div>
-            <p className="text-[#4c9a66] dark:text-floral-muted-dark/80 text-sm max-w-xs leading-relaxed">
+            <p className={`text-sm max-w-xs leading-relaxed ${isBirBagban ? 'text-[#acd5bc]/80' : 'text-[#4c9a66] dark:text-floral-muted-dark/80'}`}>
               {t('footer_desc')}
             </p>
             <div className="flex gap-4">
@@ -76,25 +82,36 @@ export default function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 aria-label="BirBuket Instagram"
-                className="w-10 h-10 rounded-full bg-[#f8f9f8] dark:bg-white/5 flex items-center justify-center hover:bg-primary hover:text-floral-deep transition-all group border border-transparent dark:border-white/5"
+                className={`w-10 h-10 rounded-full flex items-center justify-center hover:bg-primary hover:text-floral-deep transition-all group border ${
+                  isBirBagban
+                    ? 'bg-[#06190f]/60 border-[#143c24]'
+                    : 'bg-[#f8f9f8] dark:bg-white/5 border-transparent dark:border-white/5'
+                }`}
               >
-                <Instagram className="w-5 h-5 group-hover:scale-110 transition-transform dark:text-floral-deep-dark" />
+                <Instagram className={`w-5 h-5 group-hover:scale-110 transition-transform ${isBirBagban ? 'text-[#acd5bc]' : 'dark:text-floral-deep-dark'}`} />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-[#f8f9f8] dark:bg-white/5 flex items-center justify-center hover:bg-primary hover:text-floral-deep transition-all group border border-transparent dark:border-white/5">
-                <Twitter className="w-5 h-5 group-hover:scale-110 transition-transform dark:text-floral-deep-dark" />
+              <a 
+                href="#" 
+                className={`w-10 h-10 rounded-full flex items-center justify-center hover:bg-primary hover:text-floral-deep transition-all group border ${
+                  isBirBagban
+                    ? 'bg-[#06190f]/60 border-[#143c24]'
+                    : 'bg-[#f8f9f8] dark:bg-white/5 border-transparent dark:border-white/5'
+                }`}
+              >
+                <Twitter className={`w-5 h-5 group-hover:scale-110 transition-transform ${isBirBagban ? 'text-[#acd5bc]' : 'dark:text-floral-deep-dark'}`} />
               </a>
             </div>
           </div>
 
           <div className="flex flex-col gap-5">
-            <h4 className="font-bold text-xs uppercase tracking-widest text-[#1a1a1a] dark:text-floral-deep-dark">{t('catalog')}</h4>
+            <h4 className={`font-bold text-xs uppercase tracking-widest ${isBirBagban ? 'text-white' : 'text-[#1a1a1a] dark:text-floral-deep-dark'}`}>{t('catalog')}</h4>
             <div className="flex flex-col gap-3">
               {catalogCategories.length > 0 ? (
                 catalogCategories.map((cat) => (
                   <Link
                     key={cat.id}
                     to={`/collections?category=${cat.id}`}
-                    className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm"
+                    className={`hover:text-primary transition-colors text-sm ${isBirBagban ? 'text-[#acd5bc]' : 'text-[#4c9a66] dark:text-floral-muted-dark/70'}`}
                   >
                     {cat.title}
                   </Link>
@@ -102,7 +119,7 @@ export default function Footer() {
               ) : (
                 <Link
                   to="/collections"
-                  className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm"
+                  className={`hover:text-primary transition-colors text-sm ${isBirBagban ? 'text-[#acd5bc]' : 'text-[#4c9a66] dark:text-floral-muted-dark/70'}`}
                 >
                   {t('all_products')}
                 </Link>
@@ -111,16 +128,16 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-col gap-5">
-            <h4 className="font-bold text-xs uppercase tracking-widest text-[#1a1a1a] dark:text-floral-deep-dark">{t('services')}</h4>
+            <h4 className={`font-bold text-xs uppercase tracking-widest ${isBirBagban ? 'text-white' : 'text-[#1a1a1a] dark:text-floral-deep-dark'}`}>{t('services')}</h4>
             <div className="flex flex-col gap-3">
               <Link
                 to={toyDecorCollectionHref}
-                className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm"
+                className={`hover:text-primary transition-colors text-sm ${isBirBagban ? 'text-[#acd5bc]' : 'text-[#4c9a66] dark:text-floral-muted-dark/70'}`}
               >
                 {t('toy_decor')}
               </Link>
               <Link
-                className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm"
+                className={`hover:text-primary transition-colors text-sm ${isBirBagban ? 'text-[#acd5bc]' : 'text-[#4c9a66] dark:text-floral-muted-dark/70'}`}
                 to="/birbuketclub"
               >
                 BirBuketClub
@@ -129,21 +146,29 @@ export default function Footer() {
           </div>
 
           <div className="flex flex-col gap-5">
-            <h4 className="font-bold text-xs uppercase tracking-widest text-[#1a1a1a] dark:text-floral-deep-dark">{t('support')}</h4>
+            <h4 className={`font-bold text-xs uppercase tracking-widest ${isBirBagban ? 'text-white' : 'text-[#1a1a1a] dark:text-floral-deep-dark'}`}>{t('support')}</h4>
             <div className="flex flex-col gap-3">
-              <Link className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm" to="/support#suallar">{t('faq')}</Link>
-              <Link className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm" to="/support#catdirilma">{t('delivery_rules')}</Link>
-              <Link className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm" to="/support#qaytarilma">{t('returns')}</Link>
-              <Link className="text-[#4c9a66] dark:text-floral-muted-dark/70 hover:text-primary dark:hover:text-primary transition-colors text-sm" to="/support#elaqe">{t('contact')}</Link>
+              <Link className={`hover:text-primary transition-colors text-sm ${isBirBagban ? 'text-[#acd5bc]' : 'text-[#4c9a66] dark:text-floral-muted-dark/70'}`} to="/support#suallar">{t('faq')}</Link>
+              <Link className={`hover:text-primary transition-colors text-sm ${isBirBagban ? 'text-[#acd5bc]' : 'text-[#4c9a66] dark:text-floral-muted-dark/70'}`} to="/support#catdirilma">{t('delivery_rules')}</Link>
+              <Link className={`hover:text-primary transition-colors text-sm ${isBirBagban ? 'text-[#acd5bc]' : 'text-[#4c9a66] dark:text-floral-muted-dark/70'}`} to="/support#qaytarilma">{t('returns')}</Link>
+              <Link className={`hover:text-primary transition-colors text-sm ${isBirBagban ? 'text-[#acd5bc]' : 'text-[#4c9a66] dark:text-floral-muted-dark/70'}`} to="/support#elaqe">{t('contact')}</Link>
             </div>
           </div>
 
           <div className="flex flex-col gap-5">
             <h4 className="font-bold text-xs uppercase tracking-widest text-primary">{t('write_to_us')}</h4>
-            <p className="text-[#4c9a66] dark:text-floral-muted-dark/60 text-xs">{t('newsletter_desc')}</p>
-            <div className="flex rounded-lg overflow-hidden border border-black/5 dark:border-white/10 bg-[#f8f9f8] dark:bg-white/5 p-1 transition-colors">
+            <p className={`text-xs ${isBirBagban ? 'text-[#acd5bc]/70' : 'text-[#4c9a66] dark:text-floral-muted-dark/60'}`}>{t('newsletter_desc')}</p>
+            <div className={`flex rounded-lg overflow-hidden border p-1 transition-colors ${
+              isBirBagban
+                ? 'border-[#143c24] bg-[#06190f]/60'
+                : 'border-black/5 dark:border-white/10 bg-[#f8f9f8] dark:bg-white/5'
+            }`}>
               <input 
-                className="bg-transparent px-3 py-2 text-xs border-none focus:ring-0 w-full placeholder:text-floral-muted/50 dark:placeholder:text-white/20 dark:text-white" 
+                className={`bg-transparent px-3 py-2 text-xs border-none focus:ring-0 w-full focus:outline-none ${
+                  isBirBagban
+                    ? 'placeholder:text-[#a4ccb2]/40 text-white'
+                    : 'placeholder:text-floral-muted/50 dark:placeholder:text-white/20 dark:text-white'
+                }`}
                 placeholder="Email" 
                 type="email"
               />
@@ -154,9 +179,9 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-black/5 dark:border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-[#4c9a66] opacity-60 text-xs">{t('rights_reserved')}</p>
-          <div className="flex gap-8 text-xs text-[#4c9a66] font-medium">
+        <div className={`pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4 ${isBirBagban ? 'border-[#143c24]' : 'border-black/5 dark:border-white/5'}`}>
+          <p className={`opacity-60 text-xs ${isBirBagban ? 'text-[#acd5bc]/60' : 'text-[#4c9a66]'}`}>{t('rights_reserved')}</p>
+          <div className={`flex gap-8 text-xs font-medium ${isBirBagban ? 'text-[#acd5bc]' : 'text-[#4c9a66]'}`}>
             <Link className="hover:text-primary transition-colors" to="/privacy">{t('privacy_policy')}</Link>
             <Link className="hover:text-primary transition-colors" to="/terms">{t('terms_of_use')}</Link>
           </div>
