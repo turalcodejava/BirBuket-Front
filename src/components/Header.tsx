@@ -273,7 +273,7 @@ export default function Header() {
 
       {/* Mobile Drawer Navigation Menu */}
       {mobileMenuOpen && (
-        <div className={`fixed inset-x-0 top-[73px] bottom-0 z-40 w-full backdrop-blur-md flex flex-col p-6 md:hidden space-y-4 overflow-y-auto ${
+        <div className={`fixed inset-x-0 top-[73px] bottom-0 z-[9999] w-full backdrop-blur-md flex flex-col p-6 md:hidden space-y-4 overflow-y-auto ${
           isBirBagban
             ? 'bg-[#040f09]/95 border-t border-[#143c24]'
             : 'bg-white/95 dark:bg-slate-900/95 border-t border-floral-muted/5 dark:border-white/5 shadow-2xl'
