@@ -1,12 +1,29 @@
 import { CheckCircle2, Copy } from 'lucide-react';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { checkoutService } from '../services/api';
 
 export default function CheckoutSuccess() {
   const location = useLocation();
   const state = (location.state as { orderNumber?: string; orderId?: string } | null) || null;
+  
+  const queryParams = React.useMemo(() => new URLSearchParams(location.search), [location.search]);
+  const queryOrderId = queryParams.get('orderId');
+  
   const orderNumber = state?.orderNumber || '-';
-  const orderId = state?.orderId || '';
+  const orderId = state?.orderId || queryOrderId || '';
+
+  React.useEffect(() => {
+    if (queryOrderId) {
+      const id = Number(queryOrderId);
+      if (Number.isFinite(id) && id > 0) {
+        checkoutService.payOrder({ orderId: id }).catch((err) => {
+          console.error('Payment confirmation error:', err);
+        });
+      }
+    }
+  }, [queryOrderId]);
+
   const shownCode =
     orderNumber && orderNumber !== '-'
       ? `#${orderNumber}`
