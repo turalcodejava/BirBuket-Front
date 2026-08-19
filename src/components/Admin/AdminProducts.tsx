@@ -11,11 +11,13 @@ import {
   Plus,
   Save,
   Trash2,
+  X,
 } from 'lucide-react';
 import {
   productService,
   variantDataUrlToImageFile,
   variantService,
+  categoryService,
   type ProductVariantAdmin,
 } from '../../services/api';
 
@@ -286,8 +288,36 @@ export default function AdminProducts() {
   const [creatingVariantForProductId, setCreatingVariantForProductId] = useState<number | null>(null);
   const [newVariantDraftByProductId, setNewVariantDraftByProductId] = useState<Record<number, VariantFormDraft>>({});
   const [notice, setNotice] = useState('');
-  const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
   const [deletingVariantId, setDeletingVariantId] = useState<number | null>(null);
+  const [deletingProductId, setDeletingProductId] = useState<number | null>(null);
+
+  // New product modal states
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [newProduct, setNewProduct] = useState({
+    productName: '',
+    description: '',
+    productType: 'FLOWER',
+    isSingle: false,
+    discountPercentage: 0,
+    categoryId: 1,
+  });
+  const [newProductImage, setNewProductImage] = useState<File | null>(null);
+  const [newProductImagePreview, setNewProductImagePreview] = useState<string>('');
+
+  // Load categories
+  useEffect(() => {
+    categoryService.getAll()
+      .then((res) => {
+        if (res?.success && Array.isArray(res.data)) {
+          setCategories(res.data);
+          if (res.data.length > 0) {
+            setNewProduct((prev) => ({ ...prev, categoryId: res.data[0].id }));
+          }
+        }
+      })
+      .catch((err) => console.error("Error loading categories:", err));
+  }, []);
 
   const loadPage = useCallback(async (nextPage: number) => {
     setLoading(true);
@@ -621,6 +651,49 @@ export default function AdminProducts() {
     }
   };
 
+  const handleCreateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newProduct.productName.trim()) {
+      setError('Məhsul adı daxil edilməlidir.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const payload = {
+        product: {
+          productName: newProduct.productName.trim(),
+          description: newProduct.description.trim(),
+          productType: newProduct.productType,
+          productCategoryId: newProduct.categoryId,
+          isSingle: newProduct.isSingle,
+          discountPercentage: newProduct.discountPercentage,
+        },
+        images: newProductImage ? [newProductImage] : undefined,
+      };
+      await productService.create(payload);
+      setNotice('Məhsul uğurla yaradıldı.');
+      setShowAddProductModal(false);
+      // Reset form
+      setNewProduct({
+        productName: '',
+        description: '',
+        productType: 'FLOWER',
+        isSingle: false,
+        discountPercentage: 0,
+        categoryId: categories[0]?.id || 1,
+      });
+      setNewProductImage(null);
+      setNewProductImagePreview('');
+      void loadPage(0);
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Məhsul yaradıla bilmədi.';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const saveVariant = async (productId: number, v: VariantRow) => {
     const d = variantDraft[v.id] ?? seedVariantDraftFromRow(v);
     const price = Number(String(d.price).replace(',', '.'));
@@ -709,6 +782,14 @@ export default function AdminProducts() {
               className="rounded-lg border border-floral-muted/20 px-3 py-1.5 text-xs font-bold hover:bg-primary/10 disabled:opacity-50 dark:border-white/15"
             >
               Yenilə
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAddProductModal(true)}
+              className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-black text-black hover:opacity-90 transition-opacity"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Yeni Məhsul
             </button>
           </div>
         </div>
@@ -1301,6 +1382,147 @@ export default function AdminProducts() {
               </div>
             </div>
           </>
+        )}
+        {/* Yeni məhsul yaratmaq üçün Modal */}
+        {showAddProductModal && (
+          <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm p-4 flex items-center justify-center">
+            <div className="w-full max-w-lg rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 p-6 md:p-8 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-base font-black uppercase tracking-wider text-black dark:text-white">
+                  Yeni Məhsul Yarat
+                </h3>
+                <button
+                  className="size-8 rounded-lg border border-slate-200 dark:border-white/10 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-white/5 transition-colors text-black dark:text-white"
+                  onClick={() => setShowAddProductModal(false)}
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateProduct} className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Məhsulun Adı</label>
+                  <input
+                    type="text"
+                    required
+                    value={newProduct.productName}
+                    onChange={(e) => setNewProduct(prev => ({ ...prev, productName: e.target.value }))}
+                    placeholder="Məs. Qırmızı qızılgüllər"
+                    className="w-full rounded-xl border border-slate-200 dark:border-white/10 px-3 py-2 text-sm bg-transparent outline-none focus:border-primary text-black dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Təsvir / Açıqlama</label>
+                  <textarea
+                    value={newProduct.description}
+                    onChange={(e) => setNewProduct(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Məhsul haqqında qısa məlumat..."
+                    className="w-full min-h-16 rounded-xl border border-slate-200 dark:border-white/10 px-3 py-2 text-sm bg-transparent outline-none focus:border-primary text-black dark:text-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Məhsul Növü</label>
+                    <select
+                      value={newProduct.productType}
+                      onChange={(e) => setNewProduct(prev => ({ ...prev, productType: e.target.value }))}
+                      className="w-full rounded-xl border border-slate-200 bg-white dark:border-white/10 px-3 py-2 text-sm bg-transparent outline-none focus:border-primary text-black dark:text-white dark:bg-slate-900"
+                    >
+                      {ADMIN_PRODUCT_TYPE_OPTIONS.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Kateqoriya</label>
+                    <select
+                      value={newProduct.categoryId}
+                      onChange={(e) => setNewProduct(prev => ({ ...prev, categoryId: Number(e.target.value) }))}
+                      className="w-full rounded-xl border border-slate-200 bg-white dark:border-white/10 px-3 py-2 text-sm bg-transparent outline-none focus:border-primary text-black dark:text-white dark:bg-slate-900"
+                    >
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.title}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Endirim %</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={newProduct.discountPercentage}
+                      onChange={(e) => setNewProduct(prev => ({ ...prev, discountPercentage: Number(e.target.value) }))}
+                      className="w-full rounded-xl border border-slate-200 dark:border-white/10 px-3 py-2 text-sm bg-transparent outline-none focus:border-primary text-black dark:text-white"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-5">
+                    <input
+                      type="checkbox"
+                      id="isSingleNew"
+                      checked={newProduct.isSingle}
+                      onChange={(e) => setNewProduct(prev => ({ ...prev, isSingle: e.target.checked }))}
+                      className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor="isSingleNew" className="text-xs font-bold text-slate-600 dark:text-slate-300 cursor-pointer select-none">
+                      Tək məhsul (single)
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Əsas Şəkil</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setNewProductImage(file);
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setNewProductImagePreview(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      } else {
+                        setNewProductImagePreview('');
+                      }
+                    }}
+                    className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-black hover:file:opacity-90"
+                  />
+                  {newProductImagePreview && (
+                    <div className="mt-2 h-24 w-24 rounded-lg overflow-hidden border border-slate-200">
+                      <img src={newProductImagePreview} alt="Preview" className="h-full w-full object-cover" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex gap-3 pt-2 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setShowAddProductModal(false)}
+                    className="px-4 py-2 text-xs font-black rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-black dark:text-white"
+                  >
+                    Ləğv Et
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-5 py-2 text-xs font-black rounded-xl bg-primary text-black hover:opacity-90 disabled:opacity-50"
+                  >
+                    Məhsul Yarat
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
       </div>
     </div>
