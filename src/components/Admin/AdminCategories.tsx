@@ -2,6 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2, Save, X, Loader2, Image, FileText } from 'lucide-react';
 import { categoryService } from '../../services/api';
 
+const normalizeImageUrl = (url?: string): string => {
+  if (!url) return '';
+  if (url.startsWith('http://localhost:8083') || url.startsWith('http://127.0.0.1:8083')) {
+    return url.replace(/http:\/\/(localhost|127\.0\.0\.1):8083/, '');
+  }
+  return url;
+};
+
 type Category = {
   id?: number;
   title: string;
@@ -166,7 +174,7 @@ export default function AdminCategories() {
                 >
                   {cat.imageUrl ? (
                     <img 
-                      src={cat.imageUrl} 
+                      src={normalizeImageUrl(cat.imageUrl)} 
                       alt={cat.title} 
                       className="w-24 h-24 rounded-2xl object-cover border border-white/10 shrink-0" 
                     />
@@ -285,7 +293,7 @@ export default function AdminCategories() {
                   {(categoryImagePreview || editingCategory.imageUrl) && (
                     <div className="mt-2 h-20 w-20 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shrink-0">
                       <img 
-                        src={categoryImagePreview || editingCategory.imageUrl} 
+                        src={categoryImagePreview || normalizeImageUrl(editingCategory.imageUrl)} 
                         alt="Preview" 
                         className="h-full w-full object-cover" 
                       />

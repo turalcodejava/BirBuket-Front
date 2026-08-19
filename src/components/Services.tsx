@@ -30,6 +30,14 @@ const defaultServices = [
   }
 ];
 
+const normalizeImageUrl = (url?: string): string => {
+  if (!url) return '';
+  if (url.startsWith('http://localhost:8083') || url.startsWith('http://127.0.0.1:8083')) {
+    return url.replace(/http:\/\/(localhost|127\.0\.0\.1):8083/, '');
+  }
+  return url;
+};
+
 export default function Services() {
   const { t } = useLanguage();
   const [dynamicServices, setDynamicServices] = useState(defaultServices);
@@ -39,28 +47,29 @@ export default function Services() {
     const fetchCategoryData = async () => {
       try {
         setLoading(true);
-        // Fetching categories 2, 3, and 4 as requested
-        const [res2, res3, res4] = await Promise.all([
-          categoryService.getById(2).catch(() => null),
-          categoryService.getById(3).catch(() => null),
-          categoryService.getById(4).catch(() => null)
-        ]);
-
-        setDynamicServices(prev => prev.map(s => {
-          if (s.id === 2 && res2?.success) {
-            const data2 = res2.data;
-            return { ...s, title: data2.title, desc: data2.subtitle || '', img: data2.imageUrl };
-          }
-          if (s.id === 3 && res3?.success) {
-            const data3 = res3.data;
-            return { ...s, title: data3.title, desc: data3.subtitle || '', img: data3.imageUrl };
-          }
-          if (s.id === 4 && res4?.success) {
-            const data4 = res4.data;
-            return { ...s, title: data4.title, desc: data4.subtitle || '', img: data4.imageUrl };
-          }
-          return s;
+        const res = await categoryService.getAll();
+        const list = res?.data || (Array.isArray(res) ? res : []);
+        
+        const actions = ["Sifariş ver", "Kolleksiyaya bax", "Məsləhət al"];
+        const formatted = list.slice(0, 3).map((cat: any, idx: number) => ({
+          id: cat.id,
+          title: cat.title,
+          desc: cat.subtitle || '',
+          img: normalizeImageUrl(cat.imageUrl),
+          action: actions[idx] || "Kolleksiyaya bax"
         }));
+
+        while (formatted.length < 3) {
+          formatted.push({
+            id: formatted.length + 100,
+            title: "Kateqoriya Yoxdur",
+            desc: "Tezliklə yeni kateqoriyalar əlavə olunacaq...",
+            img: undefined,
+            action: "Ətraflı"
+          });
+        }
+
+        setDynamicServices(formatted);
       } catch (error) {
         console.error("Error fetching categories:", error);
       } finally {
