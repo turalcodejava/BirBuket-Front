@@ -49,6 +49,7 @@ export default function Header() {
     { name: t('club'), path: '/birbuketclub' },
     { name: t('create_bouquet'), path: '/studio' },
     { name: t('gardener'), path: '/bir-bagban' },
+    { name: t('bir_toy'), path: '/bir-toy' },
     { name: t('about'), path: '/about' },
     ...(hasAgronomistRole ? [{ name: t('bagban_panel'), path: '/agronomist' }] : []),
     ...(hasFloristRole ? [{ name: t('florist_panel'), path: '/florist' }] : []),

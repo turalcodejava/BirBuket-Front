@@ -18,6 +18,7 @@ import ProductDetail from './components/ProductDetail';
 import Footer from './components/Footer';
 import BouquetStudio from './components/BouquetStudio';
 import LiveChatWidget from './components/LiveChatWidget';
+import BirToy from './components/BirToy';
 
 import { AuthProvider } from './context/AuthContext';
 import Login from './components/Auth/Login';
@@ -245,6 +246,7 @@ function AppContent() {
           <Route path="/bir-bagban/reservation/success" element={<PlantDoctorReservationSuccess />} />
           <Route path="/about" element={<About />} />
           <Route path="/birbuketclub" element={<BirBuketClub />} />
+          <Route path="/bir-toy" element={<BirToy />} />
           <Route path="/support" element={<SupportPage />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfUse />} />
