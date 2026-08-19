@@ -15,6 +15,8 @@ export default function AdminCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Partial<Category> | null>(null);
+  const [categoryImage, setCategoryImage] = useState<File | null>(null);
+  const [categoryImagePreview, setCategoryImagePreview] = useState<string>('');
   
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -79,13 +81,17 @@ export default function AdminCategories() {
     localStorage.setItem(MOCK_CATEGORIES_KEY, JSON.stringify(updated));
 
     try {
-      await categoryService.saveCategory(editingCategory);
+      await categoryService.saveCategory(editingCategory, categoryImage || undefined);
       setSuccess('Kateqoriya uğurla yadda saxlanıldı.');
       setEditingCategory(null);
+      setCategoryImage(null);
+      setCategoryImagePreview('');
       loadCategories();
     } catch {
       setSuccess('Kateqoriya uğurla yadda saxlanıldı (Local Mock Mode).');
       setEditingCategory(null);
+      setCategoryImage(null);
+      setCategoryImagePreview('');
     }
   };
 
@@ -121,7 +127,11 @@ export default function AdminCategories() {
               </p>
             </div>
             <button
-              onClick={() => setEditingCategory({ title: '', subtitle: '', imageUrl: '' })}
+              onClick={() => {
+                setEditingCategory({ title: '', subtitle: '', imageUrl: '' });
+                setCategoryImage(null);
+                setCategoryImagePreview('');
+              }}
               className="inline-flex items-center gap-1.5 rounded-xl bg-primary text-black px-4 py-2 text-xs font-black shadow-sm hover:opacity-90"
             >
               <Plus className="size-4" /> Yeni Kateqoriya
@@ -173,7 +183,11 @@ export default function AdminCategories() {
                         </span>
                         <div className="flex gap-1">
                           <button
-                            onClick={() => setEditingCategory(cat)}
+                            onClick={() => {
+                              setEditingCategory(cat);
+                              setCategoryImage(null);
+                              setCategoryImagePreview('');
+                            }}
                             className="p-1 text-slate-400 hover:text-primary transition-colors"
                           >
                             <Edit className="size-4" />
@@ -249,14 +263,34 @@ export default function AdminCategories() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Şəkil URL-i (Image URL)</label>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Kateqoriya Şəkli</label>
                   <input
-                    type="text"
-                    value={editingCategory.imageUrl || ''}
-                    onChange={(e) => setEditingCategory(prev => ({ ...prev, imageUrl: e.target.value }))}
-                    placeholder="https://..."
-                    className="w-full rounded-xl border border-slate-200 dark:border-white/10 px-3 py-2 text-sm bg-transparent outline-none focus:border-primary text-black dark:text-white"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setCategoryImage(file);
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setCategoryImagePreview(reader.result as string);
+                        };
+                        reader.readAsDataURL(file);
+                      } else {
+                        setCategoryImagePreview('');
+                      }
+                    }}
+                    className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-black hover:file:opacity-90"
                   />
+                  {(categoryImagePreview || editingCategory.imageUrl) && (
+                    <div className="mt-2 h-20 w-20 rounded-xl overflow-hidden border border-slate-200 dark:border-white/10 shrink-0">
+                      <img 
+                        src={categoryImagePreview || editingCategory.imageUrl} 
+                        alt="Preview" 
+                        className="h-full w-full object-cover" 
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <button

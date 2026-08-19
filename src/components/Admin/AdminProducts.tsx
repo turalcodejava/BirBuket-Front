@@ -185,6 +185,8 @@ type ProductFormDraft = {
   productType: string;
   isSingle: boolean;
   discountInput: string;
+  mainImageFile?: File;
+  mainImagePreview?: string;
 };
 
 type VariantFormDraft = {
@@ -455,6 +457,7 @@ export default function AdminProducts() {
         productType: row.productType,
         isSingle: row.isSingle,
         discountInput: row.discountPercentage != null ? String(row.discountPercentage) : '',
+        mainImagePreview: row.mainImageUrl || '',
       },
     }));
     setVariantDraft((prev) => {
@@ -546,7 +549,16 @@ export default function AdminProducts() {
         discountPercentage: discountNum,
       };
       if (ptUpper) patchBody.productType = ptUpper;
-      await productService.patchFields(row.id, patchBody);
+      let updatedProduct;
+      if (d.mainImageFile) {
+        updatedProduct = await productService.update(row.id, patchBody, [d.mainImageFile]);
+      } else {
+        updatedProduct = await productService.patchFields(row.id, patchBody);
+      }
+
+      const returned = updatedProduct?.data ?? updatedProduct;
+      const returnedImgUrl = returned?.mainImageUrl ?? returned?.imageUrl ?? returned?.main_image_url;
+
       setRows((prev) =>
         prev.map((r) =>
           r.id === row.id
@@ -556,6 +568,7 @@ export default function AdminProducts() {
                 productType: ptUpper,
                 isSingle: d.isSingle,
                 discountPercentage: discountNum ?? null,
+                mainImageUrl: returnedImgUrl ? normalizeImageUrl(returnedImgUrl) : r.mainImageUrl,
               }
             : r
         )
@@ -986,6 +999,39 @@ export default function AdminProducts() {
                                     placeholder="0"
                                   />
                                 </label>
+                                <div className="block text-[11px] font-bold">
+                                  Əsas Şəkil
+                                  <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="mt-1 block w-full text-xs file:mr-2 file:rounded-lg file:border-0 file:bg-primary file:px-2 file:py-1 file:text-black file:font-semibold"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (!file) return;
+                                      const reader = new FileReader();
+                                      reader.onloadend = () => {
+                                        setProductDraft((prev) => ({
+                                          ...prev,
+                                          [row.id]: {
+                                            ...(prev[row.id] as ProductFormDraft),
+                                            mainImageFile: file,
+                                            mainImagePreview: reader.result as string,
+                                          },
+                                        }));
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }}
+                                  />
+                                  {(productDraft[row.id]?.mainImagePreview || row.mainImageUrl) && (
+                                    <div className="mt-2 h-16 w-16 rounded-lg overflow-hidden border border-slate-200">
+                                      <img 
+                                        src={productDraft[row.id]?.mainImagePreview || row.mainImageUrl} 
+                                        alt="Preview" 
+                                        className="h-full w-full object-cover" 
+                                      />
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                               <button
                                 type="button"

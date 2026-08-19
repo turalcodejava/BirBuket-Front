@@ -1088,24 +1088,41 @@ export const categoryService = {
     const res = await apiClient.get<APIResponse<Category[]>>('/api/category');
     return res.data;
   },
-  saveCategory: async (category: any) => {
+  saveCategory: async (category: any, imageFile?: File) => {
+    const formData = new FormData();
+    formData.append('title', category.title);
+    formData.append('subtitle', category.subtitle || '');
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
     const id = category.id;
     if (id) {
-      const candidates = [`/api/category/${id}`, `/api/category`];
-      let lastError: any = null;
-      for (const endpoint of candidates) {
-        try {
-          const res = endpoint.includes(String(id))
-            ? await apiClient.put<any>(endpoint, category, { headers: getAuthHeaders() })
-            : await apiClient.post<any>(endpoint, category, { headers: getAuthHeaders() });
-          return res.data?.data ?? res.data ?? null;
-        } catch (err: any) {
-          lastError = err;
-        }
-      }
-      throw lastError;
+      const res = await apiClient.patch<any>(`/api/category/${id}`, formData, {
+        headers: getAuthHeaders(),
+        transformRequest: [(data: any, reqHeaders: any) => {
+          if (reqHeaders) {
+            delete reqHeaders['Content-Type'];
+            delete reqHeaders.common?.['Content-Type'];
+            delete reqHeaders.post?.['Content-Type'];
+            delete reqHeaders.patch?.['Content-Type'];
+          }
+          return data;
+        }],
+      });
+      return res.data?.data ?? res.data ?? null;
     } else {
-      const res = await apiClient.post<any>('/api/category', category, { headers: getAuthHeaders() });
+      const res = await apiClient.post<any>('/api/category', formData, {
+        headers: getAuthHeaders(),
+        transformRequest: [(data: any, reqHeaders: any) => {
+          if (reqHeaders) {
+            delete reqHeaders['Content-Type'];
+            delete reqHeaders.common?.['Content-Type'];
+            delete reqHeaders.post?.['Content-Type'];
+          }
+          return data;
+        }],
+      });
       return res.data?.data ?? res.data ?? null;
     }
   },
