@@ -19,11 +19,11 @@ export default function BirToy() {
     <div className="min-h-screen bg-white text-[#051c0f] font-sans pb-16 relative flex flex-col justify-center">
       {/* Background Graphic elements */}
       <div 
-        className="absolute inset-0 bg-contain bg-no-repeat bg-center pointer-events-none opacity-90"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none opacity-45"
         style={{ backgroundImage: "url('/toy-bg.jpg')" }}
       />
       {/* Soft overlay gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent pointer-events-none" />
 
       <main className="mx-auto max-w-[800px] px-6 py-12 relative z-10 text-center space-y-10">
         
