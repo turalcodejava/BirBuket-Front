@@ -1,4 +1,4 @@
-import { Search, Sparkles, Moon, Sun, User, ShoppingBasket, Globe } from 'lucide-react';
+import { Search, Sparkles, Moon, Sun, User, ShoppingBasket, Globe, Menu, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
@@ -10,11 +10,16 @@ export default function Header() {
   const isBirBagban = location.pathname.startsWith('/bir-bagban');
   const [isDark, setIsDark] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { language, changeLanguage, t } = useLanguage();
   const { user } = useAuth();
   const roleText = String(user?.role || '').toUpperCase();
   const hasAgronomistRole = roleText.includes('AGRONOMIST');
   const hasFloristRole = roleText.includes('FLORIST');
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -249,8 +254,57 @@ export default function Header() {
               <span>BirBuket Yarat</span>
             </motion.button>
           </Link>
+
+          {/* Hamburger Mobile Menu Toggle Button */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className={`p-2.5 rounded-full border md:hidden flex items-center justify-center transition-colors ${
+              isBirBagban
+                ? 'bg-[#06190f]/60 border-[#143c24] text-[#a4ccb2] hover:bg-[#143c23] hover:text-white'
+                : 'bg-[#f8f9f8] dark:bg-slate-800 border border-black/5 dark:border-white/5 text-floral-deep dark:text-white'
+            }`}
+            title="Menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Drawer Navigation Menu */}
+      {mobileMenuOpen && (
+        <div className={`fixed inset-x-0 top-[73px] bottom-0 z-40 w-full backdrop-blur-md flex flex-col p-6 md:hidden space-y-4 overflow-y-auto ${
+          isBirBagban
+            ? 'bg-[#040f09]/95 border-t border-[#143c24]'
+            : 'bg-white/95 dark:bg-slate-900/95 border-t border-floral-muted/5 dark:border-white/5 shadow-2xl'
+        }`}>
+          {navItems.map((item) => {
+            const isClubSoon = item.path === '/birbuketclub';
+            return (
+              <NavLink
+                key={item.name}
+                to={item.path}
+                onClick={() => setMobileMenuOpen(false)}
+                className={({ isActive }) => {
+                  const base = "block py-3.5 px-6 rounded-2xl text-sm font-black uppercase tracking-wider transition-all border ";
+                  if (isBirBagban) {
+                    return base + (isActive
+                      ? 'bg-primary/20 border-primary text-primary'
+                      : 'bg-black/25 border-transparent text-[#acd5bc] hover:text-white');
+                  }
+                  return base + (isActive
+                    ? 'bg-primary/10 border-primary/20 text-primary'
+                    : isClubSoon
+                      ? 'bg-[#f8f9f8] dark:bg-white/5 border-transparent text-floral-deep/80 dark:text-floral-deep-dark/80 hover:text-red-500'
+                      : 'bg-[#f8f9f8] dark:bg-white/5 border-transparent text-floral-deep/80 dark:text-floral-deep-dark/80 hover:text-primary');
+                }}
+              >
+                {item.name}
+              </NavLink>
+            );
+          })}
+        </div>
+      )}
     </header>
   );
 }

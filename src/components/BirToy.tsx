@@ -43,7 +43,10 @@ export default function BirToy() {
           <h1 className="text-4xl md:text-6xl font-black tracking-tight text-[#051c0f]">
             BirToy <span className="text-primary text-2xl md:text-3xl font-extrabold block md:inline-block md:ml-2">Studiyası</span>
           </h1>
-          <p className="text-[#051c0f]/80 font-semibold text-base md:text-lg max-w-xl mx-auto leading-relaxed">
+          <p className="text-primary font-black text-xl md:text-2xl italic tracking-wider">
+            "Bax belə birtoy istərəm..."
+          </p>
+          <p className="text-[#051c0f]/80 font-semibold text-sm md:text-base max-w-xl mx-auto leading-relaxed">
             Toy, nişan və xüsusi tədbirləriniz üçün avtomobil gül bəzəklərinin interaktiv süni intellekt (AI) vizualizasiya platforması.
           </p>
         </div>
