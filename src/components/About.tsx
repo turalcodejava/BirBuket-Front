@@ -1,4 +1,4 @@
-import { HeartHandshake, Leaf, Truck, ShieldCheck } from 'lucide-react';
+import { HeartHandshake, Leaf, Truck, ShieldCheck, FileText, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -78,6 +78,34 @@ export default function About() {
             >
               {t('view_collections')}
             </Link>
+          </div>
+        </section>
+
+        <section className="mt-8 rounded-[36px] border border-floral-muted/10 bg-white dark:bg-white/5 p-8 lg:p-12">
+          <h2 className="text-2xl lg:text-3xl font-black text-floral-deep dark:text-floral-deep-dark">
+            Hüquqi Məlumatlar
+          </h2>
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 text-floral-muted dark:text-floral-muted-dark">
+            <div className="p-6 rounded-3xl bg-floral-muted/5 dark:bg-white/5 border border-floral-muted/10 flex items-start gap-4">
+              <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-bold uppercase text-primary tracking-widest block mb-1">VÖEN</span>
+                <p className="text-lg font-black text-floral-deep dark:text-floral-deep-dark">1602142502</p>
+              </div>
+            </div>
+            <div className="p-6 rounded-3xl bg-floral-muted/5 dark:bg-white/5 border border-floral-muted/10 flex items-start gap-4">
+              <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-bold uppercase text-primary tracking-widest block mb-1">Faktiki Ünvan</span>
+                <p className="text-sm font-semibold text-floral-deep dark:text-floral-deep-dark leading-relaxed">
+                  Bakı şəhəri, Nizami rayonu, Mirzə Xəlil Şərifli ev 1-2, m.11
+                </p>
+              </div>
+            </div>
           </div>
         </section>
       </main>
