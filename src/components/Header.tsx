@@ -142,7 +142,7 @@ export default function Header() {
           </div>
 
           {/* Language Selector Dropdown */}
-          <div className="relative">
+          <div className="relative hidden md:block">
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -196,7 +196,7 @@ export default function Header() {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={toggleTheme}
-            className={`p-2.5 rounded-full border transition-colors ${
+            className={`p-2.5 rounded-full border transition-colors hidden md:flex ${
               isBirBagban
                 ? 'bg-[#06190f]/60 border-[#143c24] text-[#a4ccb2] hover:bg-[#143c23] hover:text-white'
                 : 'bg-[#f8f9f8] dark:bg-slate-800 border border-black/5 dark:border-white/5 text-floral-deep dark:text-white'
@@ -217,7 +217,7 @@ export default function Header() {
                   <ShoppingBasket className="w-5 h-5" />
                 </div>
               </Link>
-              <Link to="/account" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <Link to="/account" className="flex items-center gap-3 hover:opacity-80 transition-opacity hidden md:flex">
                 <div className={`p-2.5 rounded-full border flex items-center justify-center ${
                   isBirBagban
                     ? 'bg-[#06190f]/60 border-[#143c24] text-primary hover:bg-[#143c23]'
@@ -228,7 +228,7 @@ export default function Header() {
               </Link>
             </div>
           ) : (
-            <Link to="/login">
+            <Link to="/login" className="hidden md:block">
               <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -278,31 +278,123 @@ export default function Header() {
             ? 'bg-[#040f09]/95 border-t border-[#143c24]'
             : 'bg-white/95 dark:bg-slate-900/95 border-t border-floral-muted/5 dark:border-white/5 shadow-2xl'
         }`}>
-          {navItems.map((item) => {
-            const isClubSoon = item.path === '/birbuketclub';
-            return (
-              <NavLink
-                key={item.name}
-                to={item.path}
-                onClick={() => setMobileMenuOpen(false)}
-                className={({ isActive }) => {
-                  const base = "block py-3.5 px-6 rounded-2xl text-sm font-black uppercase tracking-wider transition-all border ";
-                  if (isBirBagban) {
+          {/* Mobile Navigation Links */}
+          <div className="flex flex-col gap-3 flex-shrink-0">
+            {navItems.map((item) => {
+              const isClubSoon = item.path === '/birbuketclub';
+              return (
+                <NavLink
+                  key={item.name}
+                  to={item.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={({ isActive }) => {
+                    const base = "block py-3.5 px-6 rounded-2xl text-sm font-black uppercase tracking-wider transition-all border ";
+                    if (isBirBagban) {
+                      return base + (isActive
+                        ? 'bg-primary/20 border-primary text-primary'
+                        : 'bg-black/25 border-transparent text-[#acd5bc] hover:text-white');
+                    }
                     return base + (isActive
-                      ? 'bg-primary/20 border-primary text-primary'
-                      : 'bg-black/25 border-transparent text-[#acd5bc] hover:text-white');
-                  }
-                  return base + (isActive
-                    ? 'bg-primary/10 border-primary/20 text-primary'
-                    : isClubSoon
-                      ? 'bg-[#f8f9f8] dark:bg-white/5 border-transparent text-floral-deep/80 dark:text-floral-deep-dark/80 hover:text-red-500'
-                      : 'bg-[#f8f9f8] dark:bg-white/5 border-transparent text-floral-deep/80 dark:text-floral-deep-dark/80 hover:text-primary');
-                }}
+                      ? 'bg-primary/10 border-primary/20 text-primary'
+                      : isClubSoon
+                        ? 'bg-[#f8f9f8] dark:bg-white/5 border-transparent text-floral-deep/80 dark:text-floral-deep-dark/80 hover:text-red-500'
+                        : 'bg-[#f8f9f8] dark:bg-white/5 border-transparent text-floral-deep/80 dark:text-floral-deep-dark/80 hover:text-primary');
+                  }}
+                >
+                  {item.name}
+                </NavLink>
+              );
+            })}
+            
+            <Link to="/studio" onClick={() => setMobileMenuOpen(false)}>
+              <button className="w-full bg-primary text-floral-deep py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm">
+                <Sparkles className="w-4 h-4" />
+                <span>BirBuket Yarat</span>
+              </button>
+            </Link>
+          </div>
+
+          {/* Divider */}
+          <div className="h-px bg-slate-200 dark:bg-white/10 my-2" />
+
+          {/* Bottom Settings & User Row */}
+          <div className="flex flex-col gap-4 mt-auto">
+            {/* Lang & Theme Row */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              {/* Language Selector */}
+              <div className="flex items-center gap-2 justify-between">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-slate-400" />
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Dil:</span>
+                </div>
+                <div className="flex gap-1.5">
+                  {['az', 'ru', 'en', 'uz'].map((lang) => (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => changeLanguage(lang as any)}
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-black uppercase transition-all ${
+                        language === lang
+                          ? 'bg-primary text-black'
+                          : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400'
+                      }`}
+                    >
+                      {lang}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Theme Toggle */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className={`p-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold ${
+                  isBirBagban
+                    ? 'bg-[#06190f]/60 border-[#143c24] text-[#a4ccb2]'
+                    : 'bg-slate-100 dark:bg-slate-800 border-transparent text-slate-700 dark:text-white'
+                }`}
               >
-                {item.name}
-              </NavLink>
-            );
-          })}
+                {isDark ? <Sun className="w-4 h-4 text-yellow-400" /> : <Moon className="w-4 h-4" />}
+                <span>{isDark ? "Açıq Rejim" : "Tünd Rejim"}</span>
+              </button>
+            </div>
+
+            {/* User Account / Login Button */}
+            {user ? (
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
+                    {String(user.name || user.username || 'U').charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-none mb-1 truncate">
+                      {user.name} {user.surname}
+                    </h4>
+                    <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                  </div>
+                </div>
+                <Link to="/account" onClick={() => setMobileMenuOpen(false)}>
+                  <button className="text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-xl shrink-0">
+                    Profil
+                  </button>
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <Link to="/login" className="w-full" onClick={() => setMobileMenuOpen(false)}>
+                  <button className="w-full py-3 rounded-2xl text-xs font-bold border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white bg-slate-50/50 dark:bg-white/[0.02]">
+                    Daxil ol
+                  </button>
+                </Link>
+                <Link to="/register" className="w-full" onClick={() => setMobileMenuOpen(false)}>
+                  <button className="w-full py-3 rounded-2xl text-xs font-bold bg-primary text-floral-deep">
+                    Qeydiyyat
+                  </button>
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </header>
