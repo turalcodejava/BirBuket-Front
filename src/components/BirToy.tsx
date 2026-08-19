@@ -16,11 +16,11 @@ export default function BirToy() {
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-[#f8faf8] text-[#051c0f] font-sans pb-16 relative flex flex-col justify-center">
+    <div className="min-h-screen bg-white text-[#051c0f] font-sans pb-16 relative flex flex-col justify-center">
       {/* Background Graphic elements */}
       <div 
-        className="absolute inset-0 bg-cover bg-no-repeat bg-fixed pointer-events-none opacity-90"
-        style={{ backgroundImage: "url('/toy-bg.jpg')", backgroundPosition: 'center' }}
+        className="absolute inset-0 bg-contain bg-no-repeat bg-center pointer-events-none opacity-90"
+        style={{ backgroundImage: "url('/toy-bg.jpg')" }}
       />
       {/* Soft overlay gradient */}
       <div className="absolute inset-0 bg-gradient-to-t from-white via-white/50 to-transparent pointer-events-none" />
