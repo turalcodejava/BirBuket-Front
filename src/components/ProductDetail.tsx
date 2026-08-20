@@ -77,12 +77,14 @@ export default function ProductDetail() {
         setLoading(true);
         const res = await productService.getBySlug(slug);
         if (res.success) {
-          setProduct(res.data);
-          if (res.data.productVariants?.length > 0) {
-            setSelectedVariant(res.data.productVariants[0]);
-          } else {
-            setSelectedVariant(null);
-          }
+          const prod = res.data;
+          setProduct(prod);
+          setSelectedVariant({
+            id: prod.id,
+            price: prod.price || 0,
+            size: prod.size || '',
+            color: prod.color || '',
+          });
         } else {
           setError('Məhsul tapılmadı');
         }

@@ -93,7 +93,9 @@ type ProductAdminRow = {
   isSingle: boolean;
   discountPercentage: number | null;
   mainImageUrl: string;
-  variants: VariantRow[];
+  price: number;
+  size: string;
+  color: string;
 };
 
 function readDiscount(p: Record<string, unknown>): number | null {
@@ -164,7 +166,6 @@ function normalizeProductRow(raw: unknown): ProductAdminRow | null {
   const p = raw as Record<string, unknown>;
   const id = Number((p as any).id ?? (p as any).productId);
   if (!Number.isFinite(id) || id <= 0) return null;
-  const variants = parseVariantsRaw(p);
   const productName =
     String((p as any).productName ?? (p as any).title ?? (p as any).name ?? `Məhsul #${id}`).trim() ||
     `Məhsul #${id}`;
@@ -174,8 +175,10 @@ function normalizeProductRow(raw: unknown): ProductAdminRow | null {
     productType: normalizedProductTypeCode(String((p as any).productType ?? (p as any).type ?? '')),
     isSingle: normalizeBooleanProduct(p),
     discountPercentage: readDiscount(p),
-    mainImageUrl: firstMainImage(p, variants),
-    variants,
+    mainImageUrl: firstMainImage(p, []),
+    price: Number((p as any).price ?? 0),
+    size: String((p as any).size ?? 'CM50'),
+    color: String((p as any).color ?? 'RED'),
   };
 }
 
@@ -301,7 +304,11 @@ export default function AdminProducts() {
     description: '',
     productType: 'FLOWER',
     isSingle: false,
+    active: true,
+    featured: false,
     discountPercentage: 0,
+    price: 0,
+    color: 'RED',
     categoryId: 1,
   });
   const [newProductImage, setNewProductImage] = useState<File | null>(null);
@@ -680,7 +687,11 @@ export default function AdminProducts() {
           productType: newProduct.productType,
           productCategoryId: newProduct.categoryId,
           isSingle: newProduct.isSingle,
+          active: newProduct.active,
+          featured: newProduct.featured,
           discountPercentage: newProduct.discountPercentage,
+          price: newProduct.price,
+          color: newProduct.color || undefined,
         },
         images: newProductImage ? [newProductImage] : undefined,
       };
@@ -693,7 +704,11 @@ export default function AdminProducts() {
         description: '',
         productType: 'FLOWER',
         isSingle: false,
+        active: true,
+        featured: false,
         discountPercentage: 0,
+        price: 0,
+        color: 'RED',
         categoryId: categories[0]?.id || 1,
       });
       setNewProductImage(null);
@@ -1498,6 +1513,19 @@ export default function AdminProducts() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
+                    <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Qiymət (₼)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={newProduct.price}
+                      onChange={(e) => setNewProduct(prev => ({ ...prev, price: Number(e.target.value) }))}
+                      placeholder="0.00"
+                      className="w-full rounded-xl border border-slate-200 dark:border-white/10 px-3 py-2 text-sm bg-transparent outline-none focus:border-primary text-black dark:text-white"
+                    />
+                  </div>
+
+                  <div>
                     <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Endirim %</label>
                     <input
                       type="number"
@@ -1508,19 +1536,60 @@ export default function AdminProducts() {
                       className="w-full rounded-xl border border-slate-200 dark:border-white/10 px-3 py-2 text-sm bg-transparent outline-none focus:border-primary text-black dark:text-white"
                     />
                   </div>
+                </div>
 
-                  <div className="flex items-center gap-2 pt-5">
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Rəng</label>
+                  <select
+                    value={newProduct.color}
+                    onChange={(e) => setNewProduct(prev => ({ ...prev, color: e.target.value }))}
+                    className="w-full rounded-xl border border-slate-200 bg-white dark:border-white/10 px-3 py-2 text-sm bg-transparent outline-none focus:border-primary text-black dark:text-white dark:bg-slate-900"
+                  >
+                    {['RED','BLUE','GREEN','YELLOW','BLACK','WHITE','PINK','ORANGE','PURPLE','BROWN','CYAN','MAGENTA','LIME','NAVY','TEAL','OLIVE','MAROON','SILVER','GRAY','GOLD'].map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2 pt-1">
                     <input
                       type="checkbox"
-                      id="isSingleNew"
-                      checked={newProduct.isSingle}
-                      onChange={(e) => setNewProduct(prev => ({ ...prev, isSingle: e.target.checked }))}
+                      id="activeNew"
+                      checked={newProduct.active}
+                      onChange={(e) => setNewProduct(prev => ({ ...prev, active: e.target.checked }))}
                       className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
                     />
-                    <label htmlFor="isSingleNew" className="text-xs font-bold text-slate-600 dark:text-slate-300 cursor-pointer select-none">
-                      Tək məhsul (single)
+                    <label htmlFor="activeNew" className="text-xs font-bold text-slate-600 dark:text-slate-300 cursor-pointer select-none">
+                      Aktiv — render hissədə görünsün
                     </label>
                   </div>
+
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="checkbox"
+                      id="featuredNew"
+                      checked={newProduct.featured}
+                      onChange={(e) => setNewProduct(prev => ({ ...prev, featured: e.target.checked }))}
+                      className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor="featuredNew" className="text-xs font-bold text-slate-600 dark:text-slate-300 cursor-pointer select-none">
+                      Öne Çıxan — atkiritka/açıq hissədə görünsün
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="isSingleNew"
+                    checked={newProduct.isSingle}
+                    onChange={(e) => setNewProduct(prev => ({ ...prev, isSingle: e.target.checked }))}
+                    className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+                  />
+                  <label htmlFor="isSingleNew" className="text-xs font-bold text-slate-600 dark:text-slate-300 cursor-pointer select-none">
+                    Tək məhsul (single)
+                  </label>
                 </div>
 
                 <div>

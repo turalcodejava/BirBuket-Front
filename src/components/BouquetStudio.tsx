@@ -96,29 +96,23 @@ function apiProductToFlowerTypes(item: APIProduct): FlowerType[] {
   const image = item.images?.[0]?.imageUrl || FINAL_FALLBACK_IMAGE;
   const title = item.productName || 'Məhsul';
   const desc = item.description || '';
-  const variants = Array.isArray(item.productVariants) ? item.productVariants : [];
+  const price = item.price ?? 0;
 
-  if (variants.length === 0) {
-    return [productToFlowerType({
-      id: item.id,
-      title,
-      price: `0 AZN`,
-      desc,
-      img: image,
-      rating: item.rating || 0,
-      slug: item.slug || String(item.id),
-      categoryId: item.productCategory?.id || 1,
-      single: true,
-    })];
+  const colorStr = String(item.color ?? '').toUpperCase();
+  let color: 'RED' | 'WHITE' | 'PINK' | 'YELLOW' | 'BLUE' = 'RED';
+  if (['RED', 'WHITE', 'PINK', 'YELLOW', 'BLUE'].includes(colorStr)) {
+    color = colorStr as any;
+  } else {
+    color = inferFlowerColorFromProduct({ title, desc });
   }
 
-  return variants.map((v) => ({
-    id: Number(v.id) > 0 ? Number(v.id) : Number(item.id),
-    name: v.variant_name?.trim() ? `${title} - ${v.variant_name.trim()}` : title,
-    price: Number(v.price) > 0 ? Number(v.price) : 0,
-    img: String(v.imageUrl || image),
-    color: mapVariantColorToFlowerColor(v, { title, desc }),
-  }));
+  return [{
+    id: Number(item.id),
+    name: title,
+    price: Number(price) > 0 ? Number(price) : 0,
+    img: image,
+    color: color,
+  }];
 }
 
 const FALLBACK_STORE_CENTER: [number, number] = [40.4093, 49.8671];

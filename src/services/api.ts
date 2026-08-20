@@ -268,12 +268,9 @@ apiClient.interceptors.response.use(
   }
 );
 
-// Helper to map API Product to Frontend Product
 const mapProduct = (item: APIProduct): Product => {
-  const variants = item.productVariants || [];
   const images = item.images || [];
-  const minPrice =
-    variants.length > 0 ? Math.min(...variants.map((v) => v.price)) : 0;
+  const rawPrice = item.price ?? 0;
 
   // Real-world APIs might have variations in field names
   const title = item.productName || (item as any).name || 'Məhsul';
@@ -286,14 +283,16 @@ const mapProduct = (item: APIProduct): Product => {
   return {
     id: item.id,
     title,
-    price: `${minPrice} AZN`,
+    price: `${rawPrice} AZN`,
     desc,
     img: images[0]?.imageUrl || (item as any).img || '',
     hoverImg: images[1]?.imageUrl || images[0]?.imageUrl || '',
     rating: item.rating || 0,
     slug: item.slug,
     categoryId: item.productCategory?.id || (item as any).category_id || 1,
-    single
+    single,
+    color: item.color,
+    size: item.size
   };
 };
 
@@ -539,20 +538,20 @@ const normalizeProductPayloadForBackend = (input: Record<string, unknown>): Reco
     ((src as any)?.productCategory?.id);
   const categoryIdNum = Number(categoryRaw ?? 0);
 
-  const variantsRaw = Array.isArray(src.productVariants)
-    ? src.productVariants
-    : Array.isArray(src.variants)
-      ? src.variants
-      : [];
-  const normalizedVariants = normalizeProductVariantEntries(variantsRaw);
+  const price = Number(src.price ?? 0);
+  const size = src.size ? String(src.size) : undefined;
+  const color = src.color ? String(src.color) : undefined;
 
   const out: Record<string, unknown> = {
     ...src,
     productName,
     description,
-    productVariants: normalizedVariants,
+    price,
   };
   if (productType) out.productType = productType;
+  if (size) out.size = size;
+  if (color) out.color = color;
+
   const isSingleNormalized = normalizeBooleanLike(
     src.isSingle ?? src.is_single ?? src.single ?? src.singleProduct
   );

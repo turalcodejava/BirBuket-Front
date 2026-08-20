@@ -27,7 +27,9 @@ export interface APIProduct {
   sku?: string;
   productCategory?: Category;
   images: ProductImage[];
-  productVariants: ProductVariant[];
+  price: number;
+  size?: string;
+  color?: string;
   single?: boolean;
 }
 
@@ -44,6 +46,8 @@ export interface Product {
   categoryId: number;
   /** Backend is_single — false olanda studiyada göstərilmir */
   single?: boolean;
+  size?: string;
+  color?: string;
 }
 
 export interface Category {
