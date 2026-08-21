@@ -523,6 +523,32 @@ const normalizeProductPayloadForPatch = (input: Record<string, unknown>): Record
     const a = normalizeBooleanLike(src.active);
     if (typeof a === 'boolean') out.active = a;
   }
+  if ('featured' in src) {
+    const a = normalizeBooleanLike(src.featured);
+    if (typeof a === 'boolean') out.featured = a;
+  }
+  if ('renderActive' in src) {
+    const a = normalizeBooleanLike(src.renderActive);
+    if (typeof a === 'boolean') out.renderActive = a;
+  }
+  if ('birToyActive' in src) {
+    const a = normalizeBooleanLike(src.birToyActive);
+    if (typeof a === 'boolean') out.birToyActive = a;
+  }
+  if ('aciqcaActive' in src) {
+    const a = normalizeBooleanLike(src.aciqcaActive);
+    if (typeof a === 'boolean') out.aciqcaActive = a;
+  }
+  if ('price' in src) {
+    const p = Number(src.price);
+    if (Number.isFinite(p) && p >= 0) out.price = p;
+  }
+  if ('color' in src && src.color != null) {
+    out.color = String(src.color).trim().toUpperCase();
+  }
+  if ('size' in src && src.size != null) {
+    out.size = String(src.size).trim().toUpperCase();
+  }
 
   return out;
 };
