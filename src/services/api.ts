@@ -722,9 +722,16 @@ export const productService = {
     if (normalized) return normalized;
     return res.data as APIResponse<PageableResponse<APIProduct>>;
   },
-  getAll: async (page = 0, size = 12, opts?: { isSingle?: boolean }) => {
-    const qp = `page=${page}&size=${size}${opts?.isSingle === true ? '&isSingle=true&is_single=true' : ''}`;
-    const res = await apiClient.get<APIResponse<PageableResponse<APIProduct>>>(`/api/product?${qp}`);
+  getAll: async (page = 0, size = 12, opts?: { isSingle?: boolean; active?: boolean; renderActive?: boolean; birToyActive?: boolean; aciqcaActive?: boolean }) => {
+    const params = new URLSearchParams();
+    params.set('page', String(page));
+    params.set('size', String(size));
+    if (opts?.isSingle === true) { params.set('isSingle', 'true'); }
+    if (typeof opts?.active === 'boolean') params.set('active', String(opts.active));
+    if (typeof opts?.renderActive === 'boolean') params.set('renderActive', String(opts.renderActive));
+    if (typeof opts?.birToyActive === 'boolean') params.set('birToyActive', String(opts.birToyActive));
+    if (typeof opts?.aciqcaActive === 'boolean') params.set('aciqcaActive', String(opts.aciqcaActive));
+    const res = await apiClient.get<APIResponse<PageableResponse<APIProduct>>>(`/api/product?${params.toString()}`);
     const normalized = normalizeProductPageResponse(res.data, opts);
     if (normalized) return normalized;
     return res.data as any;
@@ -890,19 +897,27 @@ export const productService = {
     maxPrice?: number;
     color?: string;
     isSingle?: boolean;
+    active?: boolean;
+    renderActive?: boolean;
+    birToyActive?: boolean;
+    aciqcaActive?: boolean;
   }) => {
-    // The filter endpoint returns a direct list of APIProduct[] based on user example
     const axiosParams = {
       ...(params.categoryId != null ? { categoryId: params.categoryId } : {}),
       ...(typeof params.minPrice === 'number' ? { minPrice: params.minPrice } : {}),
       ...(typeof params.maxPrice === 'number' ? { maxPrice: params.maxPrice } : {}),
       ...(params.color ? { color: params.color } : {}),
       ...(params.isSingle === true ? { isSingle: true } : {}),
+      ...(typeof params.active === 'boolean' ? { active: params.active } : {}),
+      ...(typeof params.renderActive === 'boolean' ? { renderActive: params.renderActive } : {}),
+      ...(typeof params.birToyActive === 'boolean' ? { birToyActive: params.birToyActive } : {}),
+      ...(typeof params.aciqcaActive === 'boolean' ? { aciqcaActive: params.aciqcaActive } : {}),
     };
-    const res = await apiClient.get<APIProduct[]>('/api/product/filter', { params: axiosParams });
+    const res = await apiClient.get<any>('/api/product/filter', { params: axiosParams });
+    const data = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
     return {
       success: true,
-      data: res.data.map(mapProduct)
+      data: (Array.isArray(data) ? data : []).map(mapProduct)
     };
   }
 };

@@ -144,7 +144,11 @@ export default function Collections() {
       let productRes;
       if (hasAdvancedFilters) {
         // Advanced filtering behavior
-        const res = await productService.filter(filterParams);
+        const res = await productService.filter({
+          ...filterParams,
+          active: true,
+          renderActive: true,
+        });
         if (res.success) {
           setProducts(res.data);
           setTotalPages(1); // Filter API as per example returns a flat array
@@ -156,7 +160,10 @@ export default function Collections() {
         // Category-only listing with backend pagination
         productRes = await productService.getByCategory(selectedCategoryId, page, pageSize);
         if (productRes.success && productRes.data) {
-          setProducts(productRes.data.content);
+          // Client-side filter by active+renderActive (category endpoint doesn't support these params yet)
+          const all = productRes.data.content ?? [];
+          const filtered = all.filter((p: any) => p.active !== false && p.renderActive !== false);
+          setProducts(filtered);
           setTotalPages(productRes.data.totalPages);
           setTotalElements(productRes.data.totalElements);
         } else {
@@ -165,7 +172,7 @@ export default function Collections() {
       } else {
         // Standard full list with pagination
         setCategoryInfo(null);
-        productRes = await productService.getAll(page, pageSize);
+        productRes = await productService.getAll(page, pageSize, { active: true, renderActive: true });
         if (productRes.success && productRes.data) {
           setProducts(productRes.data.content);
           setTotalPages(productRes.data.totalPages);
