@@ -475,8 +475,9 @@ export default function BouquetStudio() {
         const response = await authService.renderBouquet(config);
         
         if (response && response.imageUrl) {
-          const resolvedImage = await resolveRenderableImage(response.imageUrl);
-          setPreloadedImage(resolvedImage || hardFallbackImage);
+          const cleanUrl = normalizeImageUrl(response.imageUrl);
+          const resolvedImage = await resolveRenderableImage(cleanUrl);
+          setPreloadedImage(resolvedImage || cleanUrl || hardFallbackImage);
         } else {
           setPreloadedImage(hardFallbackImage);
         }
