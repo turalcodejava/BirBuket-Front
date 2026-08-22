@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence, useSpring, useTransform } from 'motion/react';
 import { CircleMarker, MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -237,6 +237,22 @@ export default function BouquetStudio() {
     paymentMethod: 'CASH' as 'CASH' | 'CARD',
     quantity: 1,
   });
+
+  const estimatedStudioDeliveryFee = useMemo(() => {
+    if (typeof distanceKm !== 'number' || !Number.isFinite(distanceKm)) return 5.00;
+    if (distanceKm <= 4) return 5.00;
+    if (distanceKm <= 8) return 10.00;
+    if (distanceKm <= 15) return 15.00;
+    return 20.00;
+  }, [distanceKm]);
+
+  const studioItemsTotal = useMemo(() => {
+    return Number((totalPrice * checkoutForm.quantity).toFixed(2));
+  }, [totalPrice, checkoutForm.quantity]);
+
+  const studioGrandTotal = useMemo(() => {
+    return Number((studioItemsTotal + estimatedStudioDeliveryFee).toFixed(2));
+  }, [studioItemsTotal, estimatedStudioDeliveryFee]);
   
   // Logic States
   const [status, setStatus] = useState<'IDLE' | 'RENDERING' | 'COMPLETED'>('IDLE');
@@ -865,6 +881,7 @@ export default function BouquetStudio() {
         userId: effectiveUserId,
         addressLine: checkoutForm.addressLine.trim(),
         city: 'Bakı',
+        distanceKm: typeof distanceKm === 'number' && Number.isFinite(distanceKm) ? Number(distanceKm.toFixed(2)) : 0,
         addressNote:
           [
             `Say seçimi: ${checkoutForm.quantity}`,
@@ -893,14 +910,15 @@ export default function BouquetStudio() {
           window.location.href = paymentUrl;
           return;
         }
-        finishWithMockSuccess();
+        setCheckoutError('Ödəniş səhifəsi linki tapılmadı. Zəhmət olmasa yenidən cəhd edin.');
         return;
       }
 
       setCheckoutSuccess('Sifariş uğurla yaradıldı.');
       setTimeout(() => navigate('/account/orders'), 1200);
     } catch (err: any) {
-      finishWithMockSuccess();
+      console.error('Custom bouquet order error:', err);
+      setCheckoutError(err?.response?.data?.message || err?.message || 'Sifariş tamamlanarkən xəta baş verdi.');
     } finally {
       setCheckoutLoading(false);
     }
@@ -1943,8 +1961,24 @@ export default function BouquetStudio() {
                 ) : null}
               </div>
 
-              <div className="mt-4 rounded-2xl bg-slate-100 dark:bg-white/5 px-4 py-3 text-sm font-semibold">
-                Vahid qiymət: {totalPrice.toFixed(2)} AZN • Cəm: {(totalPrice * checkoutForm.quantity).toFixed(2)} AZN
+              <div className="mt-4 rounded-2xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 p-4 space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500">Buket məbləği ({checkoutForm.quantity} ədəd):</span>
+                  <span className="font-bold">{studioItemsTotal.toFixed(2)} AZN</span>
+                </div>
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-slate-500">
+                    Çatdırılma haqqı {typeof distanceKm === 'number' ? `(${distanceKm.toFixed(2)} km)` : ''}:
+                  </span>
+                  <span className="font-bold">{estimatedStudioDeliveryFee.toFixed(2)} AZN</span>
+                </div>
+                <div className="border-t border-slate-200 dark:border-white/10 pt-2 flex justify-between items-center">
+                  <span className="text-sm font-black">Cəmi ödəniş:</span>
+                  <span className="text-xl font-black text-primary">{studioGrandTotal.toFixed(2)} AZN</span>
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Çatdırılma haqqı Bakı daxilində məsafəyə görə hesablanır (0-4 km: 5 AZN, 4-8 km: 10 AZN, 8-15 km: 15 AZN, 15+ km: 20 AZN).
+                </p>
               </div>
 
               <div className="mt-4">
