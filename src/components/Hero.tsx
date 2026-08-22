@@ -65,9 +65,9 @@ export default function Hero() {
           <div className="w-full max-w-[600px] aspect-[1/1.1] rounded-[48px] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.12)]">
             <img 
               className="w-full h-full object-cover" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVeTd2Xo2UXUw8ZFknjhX6B_NilOVtK7_DPy8zsg0cQHUJA1M29VGKrwgXhEU4y7APaSSDG9_xNSJ8UqJ7QpIkYFw7yLrEE3KLZf7VsRGPjHZIuzZP9fkMcQHQws311Gz6beN8tNsTb2Ku6XnO7JB2ecRTU8-E1q8Dy4a99UVsEtWfEBpZorbKHFIrpZwVJVv7Xakw7I-xfSJGqNLp4-SHCJ4dhLz83I8vnfbHxfNCkGVptgQnXknHaml3rQ93W_olZN9GzT_g2YmC" 
+              src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=1200&q=85" 
               alt="Premium floral arrangement"
-              referrerPolicy="no-referrer"
+              loading="eager"
             />
           </div>
           <motion.div 
