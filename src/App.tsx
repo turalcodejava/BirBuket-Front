@@ -276,6 +276,14 @@ function AppContent() {
             element={<CheckoutSuccess />}
           />
           <Route
+            path="/payment/success"
+            element={<CheckoutSuccess />}
+          />
+          <Route
+            path="/payment/error"
+            element={<CheckoutPage />}
+          />
+          <Route
             path="/account"
             element={
               <ProtectedRoute>
