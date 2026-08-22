@@ -147,7 +147,6 @@ export default function Collections() {
         const res = await productService.filter({
           ...filterParams,
           active: true,
-          renderActive: true,
         });
         if (res.success) {
           setProducts(res.data);
@@ -160,9 +159,8 @@ export default function Collections() {
         // Category-only listing with backend pagination
         productRes = await productService.getByCategory(selectedCategoryId, page, pageSize);
         if (productRes.success && productRes.data) {
-          // Client-side filter by active+renderActive (category endpoint doesn't support these params yet)
           const all = productRes.data.content ?? [];
-          const filtered = all.filter((p: any) => p.active !== false && p.renderActive !== false);
+          const filtered = all.filter((p: any) => p.active !== false);
           setProducts(filtered);
           setTotalPages(productRes.data.totalPages);
           setTotalElements(productRes.data.totalElements);
@@ -172,7 +170,7 @@ export default function Collections() {
       } else {
         // Standard full list with pagination
         setCategoryInfo(null);
-        productRes = await productService.getAll(page, pageSize, { active: true, renderActive: true });
+        productRes = await productService.getAll(page, pageSize, { active: true });
         if (productRes.success && productRes.data) {
           setProducts(productRes.data.content);
           setTotalPages(productRes.data.totalPages);
