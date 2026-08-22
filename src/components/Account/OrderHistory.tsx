@@ -327,8 +327,18 @@ export default function OrderHistory() {
           }
         }
 
+        const validOrders = rawOrders.filter((order: any) => {
+          const status = String(order?.status || '').toUpperCase();
+          const paymentMethod = String(order?.paymentMethod || '').toUpperCase();
+          if (status === 'CANCELLED' || status === 'FAILED') return false;
+          if (paymentMethod === 'CARD') {
+            return status === 'PAID' || status === 'READY' || status === 'WITH_COURIER' || status === 'SHIPPED' || status === 'DELIVERED_TO_COURIER' || status === 'COMPLETED' || Boolean(order?.paidAt);
+          }
+          return true;
+        });
+
         const mapped: UiOrder[] = await Promise.all(
-          rawOrders.map(async (order: any) => {
+          validOrders.map(async (order: any) => {
             const orderId = Number(order?.orderId ?? order?.id ?? 0);
             const rawStatus = String(order?.status || 'PENDING').trim().toUpperCase();
             const normalizedStatus = normalizeOrderStatus(rawStatus);

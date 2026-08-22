@@ -221,7 +221,16 @@ export default function AdminOrders() {
       try {
         const res = await adminService.getAllOrders();
         const list = Array.isArray(res?.data) ? res.data : [];
-        const parsed = list.map(parseOrder).filter((x) => x.id > 0);
+        const validList = list.filter((order: any) => {
+          const status = String(order?.status ?? order?.orderStatus ?? '').toUpperCase();
+          const paymentMethod = String(order?.paymentMethod ?? '').toUpperCase();
+          if (status === 'CANCELLED' || status === 'FAILED') return false;
+          if (paymentMethod === 'CARD') {
+            return status === 'PAID' || status === 'READY' || status === 'WITH_COURIER' || status === 'SHIPPED' || status === 'DELIVERED_TO_COURIER' || status === 'COMPLETED' || Boolean(order?.paidAt);
+          }
+          return true;
+        });
+        const parsed = validList.map(parseOrder).filter((x) => x.id > 0);
         if (!cancelled) setOrders(parsed);
       } catch (e: any) {
         if (!cancelled) {
