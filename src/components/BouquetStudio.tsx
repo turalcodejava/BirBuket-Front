@@ -18,7 +18,7 @@ import {
   X
 } from 'lucide-react';
 import type { FlowerType, SelectedFlower, BouquetConfiguration, Product, APIProduct, ProductVariant } from '../types';
-import { authService, checkoutService, plantDoctorService, productService } from '../services/api';
+import { authService, checkoutService, plantDoctorService, productService, normalizeImageUrl } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { addCalendarDaysLocal, toLocalDateInputString } from '../utils/dateInput';
@@ -110,7 +110,7 @@ function apiProductToFlowerTypes(item: APIProduct): FlowerType[] {
     id: Number(item.id),
     name: title,
     price: Number(price) > 0 ? Number(price) : 0,
-    img: image,
+    img: normalizeImageUrl(image),
     color: color,
   }];
 }
@@ -1067,11 +1067,12 @@ export default function BouquetStudio() {
         const pageSize = 100;
         const acc: FlowerType[] = [];
         for (let page = 0; page < 30; page++) {
-          const res = await productService.getAllRaw(page, pageSize, { isSingle: true });
+          const res = await productService.getAllRaw(page, pageSize, { active: true, renderActive: true });
           if (cancelled) return;
           if (!res || typeof res !== 'object' || !('success' in res) || !res.success || !res.data) break;
           const content = (res.data.content ?? []) as APIProduct[];
           for (const item of content) {
+            if (item.renderActive === false || item.active === false) continue;
             const flowers = apiProductToFlowerTypes(item);
             acc.push(...flowers);
           }
@@ -1083,7 +1084,7 @@ export default function BouquetStudio() {
         if (acc.length > 0) {
           setAvailableFlowers(acc);
         } else {
-          setFlowersLoadNote('is_single olan tək çiçək məhsulu tapılmadı.');
+          setFlowersLoadNote('Render üçün aktiv çiçək tapılmadı.');
         }
       } catch {
         if (!cancelled) {

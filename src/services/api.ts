@@ -733,14 +733,20 @@ export const productService = {
     if (normalizedFallback) return normalizedFallback;
     return first.data as APIResponse<PageableResponse<Product>>;
   },
-  getAllRaw: async (page = 0, size = 12, opts?: { isSingle?: boolean }) => {
-    const qp = `page=${page}&size=${size}${opts?.isSingle === true ? '&isSingle=true&is_single=true' : ''}`;
-    const res = await apiClient.get<any>(`/api/product?${qp}`);
+  getAllRaw: async (page = 0, size = 12, opts?: { isSingle?: boolean; active?: boolean; renderActive?: boolean; birToyActive?: boolean }) => {
+    const params = new URLSearchParams();
+    params.set('page', String(page));
+    params.set('size', String(size));
+    if (opts?.isSingle === true) params.set('isSingle', 'true');
+    if (typeof opts?.active === 'boolean') params.set('active', String(opts.active));
+    if (typeof opts?.renderActive === 'boolean') params.set('renderActive', String(opts.renderActive));
+    if (typeof opts?.birToyActive === 'boolean') params.set('birToyActive', String(opts.birToyActive));
+    const res = await apiClient.get<any>(`/api/product?${params.toString()}`);
     const normalized = normalizeRawProductPageResponse(res.data);
     if (normalized) return normalized;
     return res.data as APIResponse<PageableResponse<APIProduct>>;
   },
-  getAll: async (page = 0, size = 12, opts?: { isSingle?: boolean; active?: boolean; renderActive?: boolean; birToyActive?: boolean; aciqcaActive?: boolean }) => {
+  getAll: async (page = 0, size = 12, opts?: { isSingle?: boolean; active?: boolean; renderActive?: boolean; birToyActive?: boolean }) => {
     const params = new URLSearchParams();
     params.set('page', String(page));
     params.set('size', String(size));
@@ -748,7 +754,6 @@ export const productService = {
     if (typeof opts?.active === 'boolean') params.set('active', String(opts.active));
     if (typeof opts?.renderActive === 'boolean') params.set('renderActive', String(opts.renderActive));
     if (typeof opts?.birToyActive === 'boolean') params.set('birToyActive', String(opts.birToyActive));
-    if (typeof opts?.aciqcaActive === 'boolean') params.set('aciqcaActive', String(opts.aciqcaActive));
     const res = await apiClient.get<APIResponse<PageableResponse<APIProduct>>>(`/api/product?${params.toString()}`);
     const normalized = normalizeProductPageResponse(res.data, opts);
     if (normalized) return normalized;
