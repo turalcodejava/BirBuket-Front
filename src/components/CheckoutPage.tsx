@@ -442,6 +442,20 @@ export default function CheckoutPage() {
     setProductNotes((prev) => ({ ...prev, [productId]: value }));
   };
 
+  const estimatedDeliveryFee = useMemo(() => {
+    if (typeof distanceKm !== 'number' || !Number.isFinite(distanceKm)) return 5.00;
+    if (distanceKm <= 4) return 5.00;
+    if (distanceKm <= 8) return 10.00;
+    if (distanceKm <= 15) return 15.00;
+    return 20.00;
+  }, [distanceKm]);
+
+  const finalCheckoutTotal = useMemo(() => {
+    if (!cart) return 0;
+    const base = Number(cart.totalAmount || 0);
+    return Number((base + estimatedDeliveryFee).toFixed(2));
+  }, [cart, estimatedDeliveryFee]);
+
   const handleSubmitOrder = async () => {
     if (!cart || !cart.items.length || !token) return;
     if (!form.recipientName.trim() || !form.phone.trim() || !form.addressLine.trim()) {
@@ -852,11 +866,23 @@ export default function CheckoutPage() {
           </div>
 
           {cart && (
-            <div className="mt-6 rounded-2xl border border-floral-muted/10 bg-[#fdfcf5] dark:bg-white/5 p-4">
-              <p className="text-sm text-floral-muted">Məhsul məbləği</p>
-              <p className="text-3xl font-black text-primary mt-1">{cart.totalAmount} AZN</p>
-              <p className="mt-2 text-xs text-floral-muted">
-                Çatdırılma haqqı şəhər və ünvana görə checkout zamanı avtomatik əlavə olunur.
+            <div className="mt-6 rounded-2xl border border-floral-muted/10 bg-[#fdfcf5] dark:bg-white/5 p-4 space-y-2.5">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-floral-muted">Məhsul məbləği:</span>
+                <span className="font-bold text-floral-deep dark:text-white">{Number(cart.totalAmount || 0).toFixed(2)} AZN</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-floral-muted">
+                  Çatdırılma haqqı {typeof distanceKm === 'number' ? `(${distanceKm.toFixed(2)} km)` : ''}:
+                </span>
+                <span className="font-bold text-floral-deep dark:text-white">{estimatedDeliveryFee.toFixed(2)} AZN</span>
+              </div>
+              <div className="border-t border-floral-muted/20 pt-2.5 flex justify-between items-center">
+                <span className="text-base font-black text-floral-deep dark:text-white">Cəmi ödəniş:</span>
+                <span className="text-2xl font-black text-primary">{finalCheckoutTotal.toFixed(2)} AZN</span>
+              </div>
+              <p className="text-[11px] text-floral-muted">
+                Çatdırılma haqqı Bakı daxilində məsafəyə görə avtomatik hesablanır (4 km: 5 AZN, 4-8 km: 10 AZN, 8-15 km: 15 AZN, 15+ km: 20 AZN).
               </p>
             </div>
           )}
