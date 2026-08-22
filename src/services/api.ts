@@ -268,6 +268,21 @@ apiClient.interceptors.response.use(
   }
 );
 
+export const normalizeImageUrl = (value?: string): string => {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const fixed = raw.replace(/\\/g, '/');
+  if (/^data:image\//i.test(fixed)) return fixed;
+  if (/^https?:\/\//i.test(fixed)) {
+    if (fixed.includes('localhost:') || fixed.includes('127.0.0.1:')) {
+      return fixed.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, '');
+    }
+    return fixed;
+  }
+  if (/^\/\//.test(fixed)) return `${typeof window !== 'undefined' ? window.location.protocol : 'https:'}${fixed}`;
+  return fixed.startsWith('/') ? fixed : `/${fixed}`;
+};
+
 const mapProduct = (item: APIProduct): Product => {
   const images = item.images || [];
   const rawPrice = item.price ?? 0;
@@ -280,13 +295,16 @@ const mapProduct = (item: APIProduct): Product => {
   if (rawSingle === true || rawSingle === 'true') single = true;
   else if (rawSingle === false || rawSingle === 'false') single = false;
 
+  const img0 = images[0]?.imageUrl || (item as any).img || '';
+  const img1 = images[1]?.imageUrl || images[0]?.imageUrl || (item as any).hoverImg || '';
+
   return {
     id: item.id,
     title,
     price: `${rawPrice} AZN`,
     desc,
-    img: images[0]?.imageUrl || (item as any).img || '',
-    hoverImg: images[1]?.imageUrl || images[0]?.imageUrl || '',
+    img: normalizeImageUrl(img0),
+    hoverImg: normalizeImageUrl(img1),
     rating: item.rating || 0,
     slug: item.slug,
     categoryId: item.productCategory?.id || (item as any).category_id || 1,
@@ -1122,10 +1140,20 @@ export const variantService = {
 export const categoryService = {
   getById: async (id: number) => {
     const res = await apiClient.get<APIResponse<Category>>(`/api/category/${id}`);
+    const data = (res.data as any)?.data || res.data;
+    if (data && typeof data === 'object') {
+      data.imageUrl = normalizeImageUrl(data.imageUrl);
+    }
     return res.data;
   },
   getAll: async () => {
     const res = await apiClient.get<APIResponse<Category[]>>('/api/category');
+    const list = (res.data as any)?.data || (Array.isArray(res.data) ? res.data : []);
+    if (Array.isArray(list)) {
+      list.forEach((c: any) => {
+        if (c) c.imageUrl = normalizeImageUrl(c.imageUrl);
+      });
+    }
     return res.data;
   },
   saveCategory: async (category: any, imageFile?: File) => {

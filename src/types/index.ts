@@ -19,6 +19,8 @@ export interface APIProduct {
   composition?: string;
   discountPercentage?: number;
   active?: boolean;
+  renderActive?: boolean;
+  birToyActive?: boolean;
   rating: number | null;
   reviewCount?: number;
   slug: string;
@@ -46,6 +48,9 @@ export interface Product {
   categoryId: number;
   /** Backend is_single — false olanda studiyada göstərilmir */
   single?: boolean;
+  active?: boolean;
+  renderActive?: boolean;
+  birToyActive?: boolean;
   size?: string;
   color?: string;
 }

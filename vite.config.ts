@@ -29,6 +29,10 @@ export default defineConfig(({mode}) => {
           target: backendUrl,
           changeOrigin: true,
         },
+        '/uploads': {
+          target: backendUrl,
+          changeOrigin: true,
+        },
         /** OSM geocode — brauzerdə birbaşa CORS problemi zamanı localhost üçün */
         '/geo-nominatim': {
           target: 'https://nominatim.openstreetmap.org',

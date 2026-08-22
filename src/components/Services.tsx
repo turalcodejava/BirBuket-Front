@@ -1,7 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
-import { categoryService } from '../services/api';
+import { categoryService, normalizeImageUrl } from '../services/api';
 import { Link } from 'react-router-dom';
 import BrandLoading from './BrandLoading';
 import { useLanguage } from '../context/LanguageContext';
@@ -29,14 +29,6 @@ const defaultServices = [
     action: "Məsləhət al"
   }
 ];
-
-const normalizeImageUrl = (url?: string): string => {
-  if (!url) return '';
-  if (url.startsWith('http://localhost:8083') || url.startsWith('http://127.0.0.1:8083')) {
-    return url.replace(/http:\/\/(localhost|127\.0\.0\.1):8083/, '');
-  }
-  return url;
-};
 
 export default function Services() {
   const { t } = useLanguage();

@@ -1,14 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Edit, Trash2, Save, X, Loader2, Image, FileText } from 'lucide-react';
-import { categoryService } from '../../services/api';
-
-const normalizeImageUrl = (url?: string): string => {
-  if (!url) return '';
-  if (url.startsWith('http://localhost:8083') || url.startsWith('http://127.0.0.1:8083')) {
-    return url.replace(/http:\/\/(localhost|127\.0\.0\.1):8083/, '');
-  }
-  return url;
-};
+import { categoryService, normalizeImageUrl } from '../../services/api';
 
 type Category = {
   id?: number;
