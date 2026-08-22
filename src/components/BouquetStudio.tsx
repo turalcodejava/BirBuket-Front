@@ -237,22 +237,6 @@ export default function BouquetStudio() {
     paymentMethod: 'CASH' as 'CASH' | 'CARD',
     quantity: 1,
   });
-
-  const estimatedStudioDeliveryFee = useMemo(() => {
-    if (typeof distanceKm !== 'number' || !Number.isFinite(distanceKm)) return 5.00;
-    if (distanceKm <= 4) return 5.00;
-    if (distanceKm <= 8) return 10.00;
-    if (distanceKm <= 15) return 15.00;
-    return 20.00;
-  }, [distanceKm]);
-
-  const studioItemsTotal = useMemo(() => {
-    return Number((totalPrice * checkoutForm.quantity).toFixed(2));
-  }, [totalPrice, checkoutForm.quantity]);
-
-  const studioGrandTotal = useMemo(() => {
-    return Number((studioItemsTotal + estimatedStudioDeliveryFee).toFixed(2));
-  }, [studioItemsTotal, estimatedStudioDeliveryFee]);
   
   // Logic States
   const [status, setStatus] = useState<'IDLE' | 'RENDERING' | 'COMPLETED'>('IDLE');
@@ -1142,6 +1126,23 @@ export default function BouquetStudio() {
   };
 
   const totalPrice = selectedFlowers.reduce((sum, f) => sum + (f.price * f.count), 0) + (selectedFlowers.length > 0 ? 12 : 0);
+
+  const estimatedStudioDeliveryFee = useMemo(() => {
+    if (typeof distanceKm !== 'number' || !Number.isFinite(distanceKm)) return 5.00;
+    if (distanceKm <= 4) return 5.00;
+    if (distanceKm <= 8) return 10.00;
+    if (distanceKm <= 15) return 15.00;
+    return 20.00;
+  }, [distanceKm]);
+
+  const studioItemsTotal = useMemo(() => {
+    return Number((totalPrice * checkoutForm.quantity).toFixed(2));
+  }, [totalPrice, checkoutForm.quantity]);
+
+  const studioGrandTotal = useMemo(() => {
+    return Number((studioItemsTotal + estimatedStudioDeliveryFee).toFixed(2));
+  }, [studioItemsTotal, estimatedStudioDeliveryFee]);
+
   const getSelectedCount = (flowerId: number) =>
     selectedFlowers.find((f) => f.id === flowerId)?.count || 0;
 

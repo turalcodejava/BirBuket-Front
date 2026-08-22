@@ -241,6 +241,7 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           <Route path="/collections" element={<Collections />} />
           <Route path="/studio" element={<BouquetStudio />} />
+          <Route path="/birbuketyarat" element={<BouquetStudio />} />
           <Route path="/bir-bagban" element={<PlantDoctor />} />
           <Route path="/bir-bagban/reservation" element={<PlantDoctorReservation />} />
           <Route path="/bir-bagban/reservation/success" element={<PlantDoctorReservationSuccess />} />
