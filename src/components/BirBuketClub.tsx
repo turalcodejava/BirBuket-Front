@@ -13,6 +13,7 @@ import {
   Truck,
   User2,
   Wallet,
+  Info,
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { CircleMarker, MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet';
@@ -21,7 +22,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { authService, checkoutService, plantDoctorService } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
-import DeliveryTariffsInfo from './DeliveryTariffsInfo';
 import { addCalendarDaysLocal, toLocalDateInputString } from '../utils/dateInput';
 
 const FLOWER_BG =
@@ -83,7 +83,7 @@ const isWithinBaku = (lat: number, lng: number) =>
   lng >= BAKU_BOUNDS.minLng &&
   lng <= BAKU_BOUNDS.maxLng;
 
-const calculateDeliveryFee = (distanceKm: number | null): number => {
+const getSingleDeliveryFee = (distanceKm: number | null): number => {
   if (distanceKm == null || distanceKm <= 4) return 5;
   if (distanceKm <= 8) return 10;
   if (distanceKm <= 15) return 15;
@@ -337,16 +337,36 @@ export default function BirBuketClub() {
   };
 
   const selectedPlanDetails = useMemo(() => {
-    return normalizedPlans.find((p) => p.code === selectedPlanCode) || normalizedPlans[0] || { price: 49, code: 'MONTHLY', periodMonths: 1 };
+    return normalizedPlans.find((p) => p.code === selectedPlanCode) || normalizedPlans[0] || { price: 49, code: 'MONTHLY', periodMonths: 1, discountPercent: 0 };
   }, [normalizedPlans, selectedPlanCode]);
 
-  const deliveryFee = useMemo(() => {
-    return calculateDeliveryFee(distanceKm);
+  // Subscription delivery calculations based on frequency, duration and discount
+  const deliveriesPerMonth = useMemo(() => {
+    return getDeliveriesPerMonth(selectedFrequency);
+  }, [selectedFrequency]);
+
+  const totalDeliveriesCount = useMemo(() => {
+    const months = selectedPlanDetails.periodMonths || 1;
+    return months * deliveriesPerMonth;
+  }, [selectedPlanDetails.periodMonths, deliveriesPerMonth]);
+
+  const singleDeliveryFee = useMemo(() => {
+    return getSingleDeliveryFee(distanceKm);
   }, [distanceKm]);
 
+  const baseTotalDeliveryFee = useMemo(() => {
+    return singleDeliveryFee * totalDeliveriesCount;
+  }, [singleDeliveryFee, totalDeliveriesCount]);
+
+  const discountedDeliveryFee = useMemo(() => {
+    const discount = Number(selectedPlanDetails.discountPercent || 0);
+    const multiplier = 1 - (discount / 100);
+    return Math.round(baseTotalDeliveryFee * multiplier);
+  }, [baseTotalDeliveryFee, selectedPlanDetails.discountPercent]);
+
   const grandTotal = useMemo(() => {
-    return (selectedPlanDetails.price || 0) + deliveryFee;
-  }, [selectedPlanDetails, deliveryFee]);
+    return (selectedPlanDetails.price || 0) + discountedDeliveryFee;
+  }, [selectedPlanDetails, discountedDeliveryFee]);
 
   const handlePickMapLocation = (lat: number, lng: number) => {
     if (!isWithinBaku(lat, lng)) {
@@ -514,30 +534,32 @@ export default function BirBuketClub() {
       {/* Main content */}
       <div className="relative z-10 min-h-screen">
         <main className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 pb-16 pt-8">
+          
+          {/* Hero Section */}
           <section className="mb-16 grid gap-10 lg:grid-cols-2 lg:items-center">
-            <div className="flex flex-col gap-6 rounded-[2rem] border border-white/30 bg-white/40 p-6 sm:p-8 backdrop-blur-md dark:bg-slate-900/35 dark:border-white/10">
+            <div className="flex flex-col gap-6 rounded-[2rem] border border-white/30 bg-white/50 p-6 sm:p-8 backdrop-blur-md dark:bg-slate-900/35 dark:border-white/10 shadow-sm">
               <div className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/30 bg-primary/15 px-4 py-1.5 text-xs font-bold text-slate-900 dark:text-white backdrop-blur-md">
                 <Sparkles className="w-3.5 h-3.5 text-primary fill-primary" />
-                {t('club_badge')}
+                Premium Çiçək Abunəliyi
               </div>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.15] drop-shadow-sm">
                 Hər Fəsil <span className="text-primary italic">Təravət</span> Evinizdə Olsun.
               </h1>
               <p className="text-sm sm:text-base text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
-                {t('club_hero_desc')}
+                Evinizi və ya ofisinizi hər zaman təravətli çiçəklərlə bəzəyin. İstədiyiniz tezlikdə və üslubda çiçəklər qapınıza qədər çatdırılsın.
               </p>
               <div className="flex flex-wrap gap-4 pt-2">
                 <a
                   href="#setup-wizard"
-                  className="rounded-2xl bg-primary px-8 py-4 text-sm font-bold text-white shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all text-center"
+                  className="rounded-2xl bg-primary px-8 py-4 text-sm font-black text-white shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all text-center"
                 >
-                  {t('club_btn_join')}
+                  İndi Abunə Ol
                 </a>
                 <a
                   href="#club-plans"
-                  className="rounded-2xl border border-white/60 bg-white/70 px-8 py-4 text-sm font-bold text-slate-800 shadow-md backdrop-blur-md hover:bg-white dark:border-white/20 dark:bg-slate-900/60 dark:text-white dark:hover:bg-slate-900/80 transition-all text-center"
+                  className="rounded-2xl border border-white/60 bg-white/70 px-8 py-4 text-sm font-black text-slate-800 shadow-md backdrop-blur-md hover:bg-white dark:border-white/20 dark:bg-slate-900/60 dark:text-white dark:hover:bg-slate-900/80 transition-all text-center"
                 >
-                  {t('club_btn_plans')}
+                  Planlara Bax
                 </a>
               </div>
             </div>
@@ -562,7 +584,7 @@ export default function BirBuketClub() {
                     ))}
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-900 dark:text-white">{t('club_subscribers')}</p>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white">1200+ Aktiv Abunəçi</p>
                     <div className="flex text-yellow-400">
                       {[1, 2, 3, 4, 5].map((i) => (
                         <Star key={i} className="w-3.5 h-3.5 fill-current" />
@@ -573,11 +595,6 @@ export default function BirBuketClub() {
               </div>
             </div>
           </section>
-
-          {/* Delivery Tariffs Banner */}
-          <div className="mb-12">
-            <DeliveryTariffsInfo />
-          </div>
 
           {/* Subscription Plans */}
           <section id="club-plans" className="mb-20 scroll-mt-24">
@@ -669,7 +686,7 @@ export default function BirBuketClub() {
                         </li>
                         <li className="flex items-center gap-2">
                           <Truck className="w-4 h-4 text-primary shrink-0" />
-                          Məsafəyə görə sürətli çatdırılma
+                          Çatdırılmaya da {Number(plan.discountPercent || 0)}% endirim
                         </li>
                       </ul>
                       <button
@@ -816,7 +833,7 @@ export default function BirBuketClub() {
                       onClick={() => setActiveStep(2)}
                       className="mt-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-primary dark:text-[#0d1b12] py-4 font-bold text-white shadow-md transition-all text-center w-full"
                     >
-                      {t('club_btn_next')}
+                      Məlumatları Daxil Et →
                     </button>
                   </div>
                 )}
@@ -825,8 +842,25 @@ export default function BirBuketClub() {
                 {activeStep === 2 && (
                   <div className="flex flex-col gap-6">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-bold text-slate-900 dark:text-white">Çatdırılma & Xəritə Məlumatları</h3>
-                      <span className="text-xs font-bold text-primary">Bakı Daxili</span>
+                      <h3 className="text-xl font-bold text-slate-900 dark:text-white">Çatdırılma Məlumatları</h3>
+                      <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">Bakı Daxili</span>
+                    </div>
+
+                    {/* Delivery Tariff Info Box inside Step 2 */}
+                    <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-xs space-y-2 text-slate-800 dark:text-slate-200">
+                      <div className="flex items-center gap-1.5 font-bold text-emerald-700 dark:text-emerald-400">
+                        <Info className="w-4 h-4 shrink-0" />
+                        <span>Bakı daxili çatdırılma tarifləri:</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-slate-300">
+                        <div>• 4 km-ə qədər: <strong>5 AZN</strong></div>
+                        <div>• 4–8 km: <strong>10 AZN</strong></div>
+                        <div>• 8–15 km: <strong>15 AZN</strong></div>
+                        <div>• 15 km-dən çox: <strong>20 AZN</strong></div>
+                      </div>
+                      <div className="pt-1.5 border-t border-emerald-500/15 text-[11px] text-emerald-800 dark:text-emerald-300 font-semibold">
+                        💡 Seçilmiş planın <strong>{selectedPlanDetails.discountPercent}% endirimi</strong> ümumi çatdırılma haqqına da tətbiq olunur!
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -940,14 +974,20 @@ export default function BirBuketClub() {
                       </div>
 
                       {distanceKm !== null && (
-                        <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs">
-                          <span className="font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-                            <MapPin className="w-4 h-4 text-emerald-600" />
-                            Məsafə: <strong>{distanceKm} km</strong>
-                          </span>
-                          <span className="font-bold text-emerald-800 dark:text-emerald-300">
-                            Çatdırılma: {deliveryFee} AZN
-                          </span>
+                        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs space-y-1">
+                          <div className="flex items-center justify-between font-semibold text-emerald-800 dark:text-emerald-300">
+                            <span className="flex items-center gap-1.5">
+                              <MapPin className="w-4 h-4 text-emerald-600" />
+                              Məsafə: <strong>{distanceKm} km</strong> (1 çatdırılma: {singleDeliveryFee} AZN)
+                            </span>
+                            <span>{totalDeliveriesCount} dəfə çatdırılma</span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-300 pt-1 border-t border-emerald-500/15">
+                            <span>Çatdırılma cəmi ({totalDeliveriesCount} × {singleDeliveryFee} AZN): {baseTotalDeliveryFee} AZN</span>
+                            <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                              Endirimlə ({selectedPlanDetails.discountPercent}%): {discountedDeliveryFee} AZN
+                            </span>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -998,7 +1038,7 @@ export default function BirBuketClub() {
                         }}
                         className="flex-1 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-primary dark:text-[#0d1b12] py-4 font-bold text-white shadow-md transition-all text-center"
                       >
-                        {t('club_btn_next_summary')}
+                        Sifariş Xülasəsinə Bax →
                       </button>
                     </div>
                   </div>
@@ -1092,7 +1132,7 @@ export default function BirBuketClub() {
 
               {/* Right column: Order Summary */}
               <div className="flex flex-col gap-6">
-                <div className="rounded-3xl border border-white/35 bg-white/60 p-6 sm:p-7 backdrop-blur-md dark:bg-slate-900/60 dark:border-white/10">
+                <div className="rounded-3xl border border-white/35 bg-white/60 p-6 sm:p-7 backdrop-blur-md dark:bg-slate-900/60 dark:border-white/10 shadow-sm">
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-5">{t('club_summary_title')}</h3>
                   <div className="flex flex-col gap-3.5 border-b border-primary/15 pb-5 text-sm">
                     <div className="flex justify-between">
@@ -1107,7 +1147,7 @@ export default function BirBuketClub() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-600 dark:text-slate-400">{t('club_summary_freq')}</span>
-                      <span className="font-bold text-slate-900 dark:text-white">{selectedFrequency}</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{selectedFrequency} ({totalDeliveriesCount} dəfə çatdırılma)</span>
                     </div>
                     {firstDeliveryDate && (
                       <div className="flex justify-between">
@@ -1132,15 +1172,15 @@ export default function BirBuketClub() {
                     
                     <div className="pt-2 border-t border-slate-200/50 dark:border-white/5 space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-slate-400">Abunəlik Qiyməti:</span>
+                        <span className="text-slate-600 dark:text-slate-400">Buket Paketi ({totalDeliveriesCount} buket, {selectedPlanDetails.discountPercent}% endirimlə):</span>
                         <span className="font-semibold text-slate-900 dark:text-white">{selectedPlanDetails.price} AZN</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-slate-600 dark:text-slate-400">
-                          Çatdırılma Haqqı {distanceKm !== null ? `(${distanceKm} km)` : ''}:
+                          Çatdırılma Haqqı ({totalDeliveriesCount} dəfə, {selectedPlanDetails.discountPercent}% endirimlə):
                         </span>
                         <span className="font-bold text-emerald-600">
-                          {deliveryFee} AZN
+                          {discountedDeliveryFee} AZN
                         </span>
                       </div>
                     </div>
@@ -1154,7 +1194,7 @@ export default function BirBuketClub() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-white/35 bg-white/50 p-4 flex items-start gap-3 backdrop-blur-md dark:bg-slate-900/50">
+                <div className="rounded-2xl border border-white/35 bg-white/50 p-4 flex items-start gap-3 backdrop-blur-md dark:bg-slate-900/50 shadow-sm">
                   <ShieldCheck className="w-5 h-5 mt-0.5 text-primary shrink-0" />
                   <p className="text-xs text-slate-600 dark:text-slate-400">
                     {t('club_security_tip')}
