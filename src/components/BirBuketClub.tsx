@@ -513,17 +513,17 @@ export default function BirBuketClub() {
 
       {/* Main content */}
       <div className="relative z-10 min-h-screen">
-        <main className="px-4 sm:px-6 lg:px-20 py-10">
-          <section className="grid gap-12 lg:grid-cols-2 items-center mb-16">
-            <div className="flex flex-col gap-6">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/15 px-4 py-1.5 text-xs font-bold text-slate-900 dark:text-white backdrop-blur-md w-fit">
+        <main className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 pb-16 pt-8">
+          <section className="mb-16 grid gap-10 lg:grid-cols-2 lg:items-center">
+            <div className="flex flex-col gap-6 rounded-[2rem] border border-white/30 bg-white/40 p-6 sm:p-8 backdrop-blur-md dark:bg-slate-900/35 dark:border-white/10">
+              <div className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/30 bg-primary/15 px-4 py-1.5 text-xs font-bold text-slate-900 dark:text-white backdrop-blur-md">
                 <Sparkles className="w-3.5 h-3.5 text-primary fill-primary" />
                 {t('club_badge')}
               </div>
-              <h1 className="text-4xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1] drop-shadow-sm">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.15] drop-shadow-sm">
                 Hər Fəsil <span className="text-primary italic">Təravət</span> Evinizdə Olsun.
               </h1>
-              <p className="text-base lg:text-lg text-slate-800 dark:text-slate-200 leading-relaxed max-w-xl font-medium">
+              <p className="text-sm sm:text-base text-slate-800 dark:text-slate-200 leading-relaxed font-medium">
                 {t('club_hero_desc')}
               </p>
               <div className="flex flex-wrap gap-4 pt-2">
@@ -542,7 +542,7 @@ export default function BirBuketClub() {
               </div>
             </div>
 
-            <div className="relative aspect-square max-w-lg mx-auto w-full rounded-3xl overflow-hidden shadow-2xl border border-white/40 group">
+            <div className="relative aspect-square max-w-md mx-auto w-full rounded-3xl overflow-hidden shadow-2xl border border-white/40 group">
               <img
                 src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=1000&q=80"
                 alt="BirBuket Club Subscription"
@@ -743,9 +743,9 @@ export default function BirBuketClub() {
               </div>
             </div>
 
-            <div className="grid gap-10 lg:grid-cols-12">
+            <div className="grid gap-10 lg:grid-cols-2">
               {/* Left column: Step Content */}
-              <div className="lg:col-span-7 flex flex-col gap-7 rounded-2xl border border-white/30 bg-white/50 p-6 backdrop-blur-md dark:bg-slate-900/50 dark:border-white/10">
+              <div className="flex flex-col gap-7 rounded-2xl border border-white/30 bg-white/50 p-6 backdrop-blur-md dark:bg-slate-900/50 dark:border-white/10">
                 
                 {/* STEP 1: Style & Frequency */}
                 {activeStep === 1 && (
@@ -1091,7 +1091,7 @@ export default function BirBuketClub() {
               </div>
 
               {/* Right column: Order Summary */}
-              <div className="lg:col-span-5 flex flex-col gap-6">
+              <div className="flex flex-col gap-6">
                 <div className="rounded-3xl border border-white/35 bg-white/60 p-6 sm:p-7 backdrop-blur-md dark:bg-slate-900/60 dark:border-white/10">
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-5">{t('club_summary_title')}</h3>
                   <div className="flex flex-col gap-3.5 border-b border-primary/15 pb-5 text-sm">
