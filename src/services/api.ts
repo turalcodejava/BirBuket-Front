@@ -1738,6 +1738,39 @@ export const checkoutService = {
       throw err;
     }
   },
+  checkoutClubSubscription: async (payload: {
+    userId: number;
+    planCode: string;
+    planName: string;
+    style: string;
+    frequency: string;
+    periodMonths: number;
+    addressLine: string;
+    city?: string;
+    addressNote?: string;
+    recipientName?: string;
+    recipientPhone?: string;
+    distanceKm?: number;
+    latitude?: number;
+    longitude?: number;
+    deliveryDate: string;
+    deliveryTimeSlot:
+      | 'SLOT_00_03'
+      | 'SLOT_03_06'
+      | 'SLOT_06_09'
+      | 'SLOT_09_12'
+      | 'SLOT_12_15'
+      | 'SLOT_15_18'
+      | 'SLOT_18_21'
+      | 'SLOT_21_24';
+    paymentMethod: 'CARD' | 'CASH';
+    amount: number;
+  }) => {
+    const res = await apiClient.post<any>('/api/order/club-subscription/checkout', payload, {
+      headers: getAuthHeaders(),
+    });
+    return res.data?.data ?? res.data;
+  },
   completeOrder: async (payload: {
     userId: number;
     addressLine: string;

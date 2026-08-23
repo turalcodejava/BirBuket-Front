@@ -56,6 +56,24 @@ export default function AdminClubManagement() {
 
   // Frequencies edit state
   const [newFreqInput, setNewFreqInput] = useState('');
+  const [editingFreqIdx, setEditingFreqIdx] = useState<number | null>(null);
+  const [editingFreqValue, setEditingFreqValue] = useState<string>('');
+
+  const handleStartEditFreq = (idx: number, freq: string) => {
+    setEditingFreqIdx(idx);
+    setEditingFreqValue(freq);
+  };
+
+  const handleSaveEditFreq = () => {
+    if (editingFreqIdx === null) return;
+    const val = editingFreqValue.trim();
+    if (!val) return;
+    const updated = [...settings.frequencies];
+    updated[editingFreqIdx] = val;
+    setSettings(prev => ({ ...prev, frequencies: updated }));
+    setEditingFreqIdx(null);
+    setEditingFreqValue('');
+  };
 
   const loadClubSettings = async () => {
     setSettingsLoading(true);
@@ -322,17 +340,27 @@ export default function AdminClubManagement() {
               <h3 className="text-xs font-black uppercase tracking-[0.08em] text-slate-500 dark:text-white/55 mb-4">Mövsümi Çatdırılma Tezlikləri</h3>
               
               <div className="flex flex-wrap gap-2.5 mb-4">
-                {settings.frequencies.map((freq) => (
+                {settings.frequencies.map((freq, idx) => (
                   <span 
-                    key={freq} 
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-3 py-1.5 text-xs font-semibold"
+                    key={idx} 
+                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-3 py-1.5 text-xs font-semibold"
                   >
-                    {freq}
+                    <span>{freq}</span>
                     <button 
-                      onClick={() => handleDeleteFrequency(freq)}
-                      className="text-red-500 hover:text-red-700 transition-colors font-bold"
+                      type="button"
+                      onClick={() => handleStartEditFreq(idx, freq)}
+                      className="text-slate-400 hover:text-primary transition-colors"
+                      title="Redaktə et"
                     >
-                      ×
+                      <Edit className="size-3" />
+                    </button>
+                    <button 
+                      type="button"
+                      onClick={() => handleDeleteFrequency(freq)}
+                      className="text-slate-400 hover:text-red-500 transition-colors font-bold"
+                      title="Sil"
+                    >
+                      <Trash2 className="size-3" />
                     </button>
                   </span>
                 ))}
@@ -353,6 +381,37 @@ export default function AdminClubManagement() {
                   Əlavə Et
                 </button>
               </div>
+
+              {/* Edit Frequency Modal */}
+              {editingFreqIdx !== null && (
+                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm p-4 flex items-center justify-center">
+                  <div className="w-full max-w-sm rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-900 p-6 shadow-2xl">
+                    <h3 className="text-sm font-black uppercase mb-3 text-slate-900 dark:text-white">Tezliyi Redaktə Et</h3>
+                    <input
+                      type="text"
+                      value={editingFreqValue}
+                      onChange={(e) => setEditingFreqValue(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 dark:border-white/10 px-3.5 py-2.5 text-xs bg-transparent mb-4 focus:border-primary text-black dark:text-white outline-none"
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        type="button"
+                        onClick={() => { setEditingFreqIdx(null); setEditingFreqValue(''); }}
+                        className="px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-700 dark:text-white"
+                      >
+                        Ləğv et
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSaveEditFreq}
+                        className="px-4 py-2 rounded-xl bg-primary text-black text-xs font-black"
+                      >
+                        Yadda saxla
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Styles management */}

@@ -1,6 +1,7 @@
 import {
   CheckCircle2,
   Clock3,
+  CreditCard,
   Gift,
   Leaf,
   Loader2,
@@ -11,12 +12,17 @@ import {
   Star,
   Truck,
   User2,
+  Wallet,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { CircleMarker, MapContainer, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { authService } from '../services/api';
+import { authService, checkoutService, plantDoctorService } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
+import DeliveryTariffsInfo from './DeliveryTariffsInfo';
+import { addCalendarDaysLocal, toLocalDateInputString } from '../utils/dateInput';
 
 const FLOWER_BG =
   'https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=1920&q=80';
@@ -29,16 +35,126 @@ type SubscriptionPlan = {
   price?: number;
 };
 
+type PaymentMethod = 'CARD' | 'CASH';
+type DeliveryTimeSlot =
+  | 'SLOT_00_03'
+  | 'SLOT_03_06'
+  | 'SLOT_06_09'
+  | 'SLOT_09_12'
+  | 'SLOT_12_15'
+  | 'SLOT_15_18'
+  | 'SLOT_18_21'
+  | 'SLOT_21_24';
+
+const DELIVERY_SLOTS: Array<{ value: DeliveryTimeSlot; label: string }> = [
+  { value: 'SLOT_00_03', label: '00:00-03:00' },
+  { value: 'SLOT_03_06', label: '03:00-06:00' },
+  { value: 'SLOT_06_09', label: '06:00-09:00' },
+  { value: 'SLOT_09_12', label: '09:00-12:00' },
+  { value: 'SLOT_12_15', label: '12:00-15:00' },
+  { value: 'SLOT_15_18', label: '15:00-18:00' },
+  { value: 'SLOT_18_21', label: '18:00-21:00' },
+  { value: 'SLOT_21_24', label: '21:00-00:00' },
+];
+
+const FALLBACK_STORE_CENTER: [number, number] = [40.4093, 49.8671];
+const BAKU_BOUNDS = {
+  minLat: 40.10,
+  maxLat: 40.65,
+  minLng: 49.60,
+  maxLng: 50.40,
+};
+
+const toRadians = (value: number) => (value * Math.PI) / 180;
+const calculateDistanceKm = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+  const earthRadiusKm = 6371;
+  const dLat = toRadians(lat2 - lat1);
+  const dLng = toRadians(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return earthRadiusKm * c;
+};
+
+const isWithinBaku = (lat: number, lng: number) =>
+  lat >= BAKU_BOUNDS.minLat &&
+  lat <= BAKU_BOUNDS.maxLat &&
+  lng >= BAKU_BOUNDS.minLng &&
+  lng <= BAKU_BOUNDS.maxLng;
+
+const calculateDeliveryFee = (distanceKm: number | null): number => {
+  if (distanceKm == null || distanceKm <= 4) return 5;
+  if (distanceKm <= 8) return 10;
+  if (distanceKm <= 15) return 15;
+  return 20;
+};
+
+function MapClickSelector({
+  lat,
+  lng,
+  onPick,
+}: {
+  lat: number | null;
+  lng: number | null;
+  onPick: (nextLat: number, nextLng: number) => void;
+}) {
+  useMapEvents({
+    click(e) {
+      onPick(e.latlng.lat, e.latlng.lng);
+    },
+  });
+
+  if (lat == null || lng == null) return null;
+  return <CircleMarker center={[lat, lng]} radius={8} pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.8 }} />;
+}
+
+function FlyToLocation({ lat, lng }: { lat: number | null; lng: number | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (lat == null || lng == null) return;
+    map.flyTo([lat, lng], 15, { duration: 0.6 });
+  }, [lat, lng, map]);
+  return null;
+}
+
+const extractPaymentUrl = (payload: any): string | null => {
+  const directCandidates = [
+    payload?.paymentUrl,
+    payload?.payment_url,
+    payload?.redirectUrl,
+    payload?.redirect_url,
+    payload?.url,
+    payload?.data?.paymentUrl,
+    payload?.data?.payment_url,
+    payload?.data?.redirectUrl,
+    payload?.data?.redirect_url,
+    payload?.data?.url,
+    payload?.result?.paymentUrl,
+    payload?.result?.payment_url,
+    payload?.result?.redirectUrl,
+    payload?.result?.redirect_url,
+    payload?.result?.url,
+  ];
+  for (const candidate of directCandidates) {
+    if (typeof candidate === 'string' && candidate.trim().length > 0) {
+      return candidate.trim();
+    }
+  }
+  return null;
+};
+
 export default function BirBuketClub() {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { user, token } = useAuth();
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [mySubscription, setMySubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [checkoutLoadingCode, setCheckoutLoadingCode] = useState<string | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
   const [clubSettings, setClubSettings] = useState<{
     pricePerDelivery: number;
     styles: Array<{ name: string; img: string; desc: string }>;
@@ -61,8 +177,23 @@ export default function BirBuketClub() {
   const [recipientName, setRecipientName] = useState<string>('');
   const [recipientPhone, setRecipientPhone] = useState<string>('');
   const [deliveryAddress, setDeliveryAddress] = useState<string>('');
+  const [addressNote, setAddressNote] = useState<string>('');
   const [firstDeliveryDate, setFirstDeliveryDate] = useState<string>('');
+  const [deliveryTimeSlot, setDeliveryTimeSlot] = useState<DeliveryTimeSlot>('SLOT_09_12');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CARD');
   const [activeStep, setActiveStep] = useState<number>(1);
+
+  // Map state
+  const [storeCenter, setStoreCenter] = useState<[number, number]>(FALLBACK_STORE_CENTER);
+  const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [distanceKm, setDistanceKm] = useState<number | null>(null);
+  const [mapSearchQuery, setMapSearchQuery] = useState('');
+  const [mapSearchLoading, setMapSearchLoading] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
+
+  const minDateString = useMemo(() => {
+    return toLocalDateInputString(addCalendarDaysLocal(new Date(), 1));
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -82,8 +213,8 @@ export default function BirBuketClub() {
         if (settingsRes && !cancelled) {
           setClubSettings({
             pricePerDelivery: Number(settingsRes.pricePerDelivery) || 25,
-            styles: Array.isArray(settingsRes.styles) ? settingsRes.styles : clubSettings.styles,
-            frequencies: Array.isArray(settingsRes.frequencies) ? settingsRes.frequencies : clubSettings.frequencies
+            styles: Array.isArray(settingsRes.styles) && settingsRes.styles.length > 0 ? settingsRes.styles : clubSettings.styles,
+            frequencies: Array.isArray(settingsRes.frequencies) && settingsRes.frequencies.length > 0 ? settingsRes.frequencies : clubSettings.frequencies
           });
         }
       } catch {
@@ -97,12 +228,20 @@ export default function BirBuketClub() {
         }
       }
 
+      try {
+        const store = await plantDoctorService.getStoreLocation();
+        if (store?.latitude && store?.longitude && !cancelled) {
+          setStoreCenter([store.latitude, store.longitude]);
+        }
+      } catch {
+        // use fallback
+      }
+
       if (token) {
         try {
           const meRes = await authService.getMySubscription();
           if (!cancelled) setMySubscription(meRes);
         } catch {
-          // Check local storage mock if API fails
           const localMock = localStorage.getItem(`mock_sub_${token}`);
           if (localMock && !cancelled) {
             try {
@@ -126,6 +265,25 @@ export default function BirBuketClub() {
     };
   }, [token]);
 
+  // Autofill user profile details if logged in
+  useEffect(() => {
+    if (user) {
+      if (!recipientName && (user.fullName || user.username)) {
+        setRecipientName(user.fullName || user.username);
+      }
+      if (!recipientPhone && user.phoneNumber) {
+        setRecipientPhone(user.phoneNumber);
+      }
+    }
+  }, [user]);
+
+  // Set default initial date to tomorrow
+  useEffect(() => {
+    if (!firstDeliveryDate) {
+      setFirstDeliveryDate(minDateString);
+    }
+  }, [firstDeliveryDate, minDateString]);
+
   const getDeliveriesPerMonth = (freq: string) => {
     if (freq === 'Hər Həftə') return 4;
     if (freq === '2 Həftədən Bir') return 2;
@@ -135,7 +293,7 @@ export default function BirBuketClub() {
   const calculatePlanPrice = (periodMonths: number, discountPercent: number, freq: string) => {
     const deliveriesPerMonth = getDeliveriesPerMonth(freq);
     const totalDeliveries = periodMonths * deliveriesPerMonth;
-    const pricePerDelivery = clubSettings.pricePerDelivery; // dynamic price per delivery
+    const pricePerDelivery = clubSettings.pricePerDelivery;
     const basePrice = totalDeliveries * pricePerDelivery;
     const discountMultiplier = 1 - (discountPercent / 100);
     return Math.round(basePrice * discountMultiplier);
@@ -167,7 +325,7 @@ export default function BirBuketClub() {
         price: calculatePlanPrice(period, discount, selectedFrequency)
       };
     });
-  }, [plans, selectedFrequency]);
+  }, [plans, selectedFrequency, clubSettings.pricePerDelivery]);
 
   const prettyPlanName = (code: string) => {
     const key = String(code || '').toUpperCase();
@@ -182,40 +340,138 @@ export default function BirBuketClub() {
     return normalizedPlans.find((p) => p.code === selectedPlanCode) || normalizedPlans[0] || { price: 49, code: 'MONTHLY', periodMonths: 1 };
   }, [normalizedPlans, selectedPlanCode]);
 
-  const handleCheckout = async (planCode: string) => {
+  const deliveryFee = useMemo(() => {
+    return calculateDeliveryFee(distanceKm);
+  }, [distanceKm]);
+
+  const grandTotal = useMemo(() => {
+    return (selectedPlanDetails.price || 0) + deliveryFee;
+  }, [selectedPlanDetails, deliveryFee]);
+
+  const handlePickMapLocation = (lat: number, lng: number) => {
+    if (!isWithinBaku(lat, lng)) {
+      setMapError('Çatdırılma yalnız Bakı şəhəri daxilində mümkündür. Zəhmət olmasa Bakı ərazisindən nöqtə seçin.');
+      return;
+    }
+    setMapError(null);
+    setSelectedLocation({ lat, lng });
+    const computedDistance = calculateDistanceKm(storeCenter[0], storeCenter[1], lat, lng);
+    setDistanceKm(Number(computedDistance.toFixed(2)));
+
+    // Reverse geocode
+    void fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.display_name && !deliveryAddress) {
+          setDeliveryAddress(data.display_name);
+        }
+      })
+      .catch(() => {});
+  };
+
+  const handleSearchLocation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!mapSearchQuery.trim()) return;
+    setMapSearchLoading(true);
+    setMapError(null);
+    try {
+      const q = encodeURIComponent(`${mapSearchQuery.trim()}, Baku, Azerbaijan`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1`);
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lng = parseFloat(data[0].lon);
+        if (!isWithinBaku(lat, lng)) {
+          setMapError('Axtarılan ünvan Bakı daxilində tapılmadı.');
+        } else {
+          handlePickMapLocation(lat, lng);
+          setDeliveryAddress(data[0].display_name || mapSearchQuery.trim());
+        }
+      } else {
+        setMapError('Ünvan tapılmadı. Xəritədən birbaşa toxunaraq seçə bilərsiniz.');
+      }
+    } catch {
+      setMapError('Axtarış zamanı xəta baş verdi.');
+    } finally {
+      setMapSearchLoading(false);
+    }
+  };
+
+  const handleFinalCheckout = async () => {
     if (!token) {
       navigate('/login');
       return;
     }
     if (!recipientName || !recipientPhone || !deliveryAddress || !firstDeliveryDate) {
       setError('Zəhmət olmasa bütün çatdırılma məlumatlarını (ad, telefon, ünvan və tarix) doldurun.');
-      document.getElementById('setup-wizard')?.scrollIntoView({ behavior: 'smooth' });
+      setActiveStep(2);
       return;
     }
-    setCheckoutLoadingCode(planCode);
+    setCheckoutLoading(true);
     setError(null);
     setSuccess(null);
+
     try {
-      const response = await authService.checkoutSubscription({
-        planCode,
+      const userId = user?.id ? Number(user.id) : 1;
+      
+      const payload = {
+        userId,
+        planCode: selectedPlanCode,
+        planName: selectedPlanDetails.name || prettyPlanName(selectedPlanCode),
         style: selectedStyle,
         frequency: selectedFrequency,
+        periodMonths: selectedPlanDetails.periodMonths || 1,
+        addressLine: deliveryAddress,
+        city: 'Bakı',
+        addressNote: `${addressNote ? addressNote + ' | ' : ''}Qəbul edən: ${recipientName}, Tel: ${recipientPhone}`,
         recipientName,
         recipientPhone,
-        deliveryAddress,
-        firstDeliveryDate,
-      });
-      const newSub = response?.subscription || response;
-      setMySubscription(newSub);
-      setSuccess('BirBuketClub abunəliyiniz uğurla aktiv edildi.');
+        distanceKm: distanceKm ?? 4,
+        latitude: selectedLocation?.lat,
+        longitude: selectedLocation?.lng,
+        deliveryDate: firstDeliveryDate,
+        deliveryTimeSlot,
+        paymentMethod,
+        amount: selectedPlanDetails.price || 49,
+      };
+
+      const response = await checkoutService.checkoutClubSubscription(payload);
+      
+      // Also notify auth-service subscription checkout
+      try {
+        await authService.checkoutSubscription({
+          planCode: selectedPlanCode,
+          style: selectedStyle,
+          frequency: selectedFrequency,
+          recipientName,
+          recipientPhone,
+          deliveryAddress,
+          firstDeliveryDate,
+        });
+      } catch (authErr) {
+        console.warn('Subscription record sync to auth-service:', authErr);
+      }
+
+      if (paymentMethod === 'CARD') {
+        const paymentUrl = extractPaymentUrl(response);
+        if (paymentUrl) {
+          window.location.href = paymentUrl;
+          return;
+        }
+      }
+
+      setSuccess('BirBuketClub abunəliyiniz və sifarişiniz uğurla qeydə alındı!');
+      setTimeout(() => {
+        navigate('/account/orders');
+      }, 1500);
+
     } catch (err: any) {
-      console.error('API Error details:', err);
-      // Simulate successful subscription locally for development if API server is offline or fails
-      const isNetworkError = !err.response || err.code === 'ERR_NETWORK' || err.message?.includes('Network Error') || err.message?.includes('timeout');
+      console.error('Checkout error:', err);
+      // Fallback in case of mock mode or offline server
+      const isNetworkError = !err.response || err.code === 'ERR_NETWORK' || err.message?.includes('Network Error');
       if (isNetworkError || err.response?.status === 404 || err.response?.status === 500) {
-        console.warn('Backend server offline or endpoint not found, using frontend mockup mode.');
         const mockSub = {
-          planCode,
+          planCode: selectedPlanCode,
           startDate: new Date().toISOString(),
           status: 'ACTIVE',
           style: selectedStyle,
@@ -224,30 +480,30 @@ export default function BirBuketClub() {
           recipientPhone,
           deliveryAddress,
           firstDeliveryDate,
+          paidAmount: grandTotal,
         };
-        // Save to localStorage so it persists on reload!
         localStorage.setItem(`mock_sub_${token}`, JSON.stringify(mockSub));
         setMySubscription(mockSub);
         setSuccess('BirBuketClub abunəliyiniz uğurla aktiv edildi (Local Mock Mode).');
       } else {
-        const msg = err?.response?.data?.message || 'Abunə aktiv edilə bilmədi.';
+        const msg = err?.response?.data?.message || 'Sifariş tamamlanarkən xəta baş verdi.';
         setError(msg);
       }
     } finally {
-      setCheckoutLoadingCode(null);
+      setCheckoutLoading(false);
     }
   };
 
   return (
     <div className="relative min-h-screen overflow-hidden">
-      {/* Arxa plan — gül görünsün */}
+      {/* Background with flower cover */}
       <div
         className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-95"
         style={{ backgroundImage: `url('${FLOWER_BG}')` }}
         aria-hidden
       />
       <div
-        className="pointer-events-none absolute inset-0 bg-white/20 backdrop-blur-sm dark:bg-black/25 dark:backdrop-blur-sm"
+        className="pointer-events-none absolute inset-0 bg-white/30 backdrop-blur-sm dark:bg-black/40 dark:backdrop-blur-sm"
         aria-hidden
       />
       <div
@@ -255,90 +511,45 @@ export default function BirBuketClub() {
         aria-hidden
       />
 
-      {/* Səhifə məzmunu */}
+      {/* Main content */}
       <div className="relative z-10 min-h-screen">
-        <section className="px-6 lg:px-20 py-10">
-          <div className="max-w-[1200px] mx-auto rounded-3xl border border-white/40 bg-white/55 dark:bg-slate-900/40 backdrop-blur-lg px-4 py-3 shadow-sm">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2 text-primary cursor-pointer" onClick={() => navigate('/')}>
-                  <Sparkles className="w-6 h-6" />
-                  <h2 className="text-lg font-black text-slate-900 dark:text-white">{t('club_title')}</h2>
-                </div>
-                <div className="hidden md:flex items-center gap-5 text-sm">
-                  <span className="font-semibold text-primary">{t('club_subscriptions')}</span>
-                  <span className="text-slate-600 dark:text-slate-300 cursor-pointer hover:text-primary transition-colors" onClick={() => navigate('/collections')}>{t('club_flowers')}</span>
-                  <span className="text-slate-600 dark:text-slate-300 cursor-pointer hover:text-primary transition-colors" onClick={() => navigate('/studio')}>{t('club_studio')}</span>
-                </div>
+        <main className="px-4 sm:px-6 lg:px-20 py-10">
+          <section className="grid gap-12 lg:grid-cols-2 items-center mb-16">
+            <div className="flex flex-col gap-6">
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/15 px-4 py-1.5 text-xs font-bold text-slate-900 dark:text-white backdrop-blur-md w-fit">
+                <Sparkles className="w-3.5 h-3.5 text-primary fill-primary" />
+                {t('club_badge')}
               </div>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => navigate(token ? '/account' : '/login')}
-                  className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary/95 transition-all"
-                >
-                  {token ? t('profile') : t('login')}
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <main className="mx-auto w-full max-w-[1200px] px-6 pb-16">
-          <section className="mb-16 grid gap-10 lg:grid-cols-2 lg:items-center">
-            <div className="flex flex-col gap-6 rounded-[2rem] border border-white/30 bg-white/40 p-8 backdrop-blur-md dark:bg-slate-900/35 dark:border-white/10">
-              <div className="inline-flex w-fit items-center gap-2 rounded-full bg-primary/15 px-4 py-1 text-primary backdrop-blur-sm">
-                <Sparkles className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase tracking-wider">{t('premium_service')}</span>
-              </div>
-              <h1 className="text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight text-slate-900 dark:text-white drop-shadow-sm">
-                Evinizə Həmişə <span className="text-primary">Təravət</span> Gəlsin
+              <h1 className="text-4xl lg:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1] drop-shadow-sm">
+                Hər Fəsil <span className="text-primary italic">Təravət</span> Evinizdə Olsun.
               </h1>
-              <p className="text-lg leading-relaxed text-slate-700 dark:text-slate-300">
-                {t('club_sub_desc')}
+              <p className="text-base lg:text-lg text-slate-800 dark:text-slate-200 leading-relaxed max-w-xl font-medium">
+                {t('club_hero_desc')}
               </p>
-              <div className="flex flex-wrap gap-4">
-                <button
-                  type="button"
-                  onClick={() =>
-                    document.getElementById('club-plans')?.scrollIntoView({ behavior: 'smooth' })
-                  }
-                  className="rounded-xl bg-primary px-8 py-4 text-base font-bold text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+              <div className="flex flex-wrap gap-4 pt-2">
+                <a
+                  href="#setup-wizard"
+                  className="rounded-2xl bg-primary px-8 py-4 text-sm font-bold text-white shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all text-center"
                 >
-                  {t('club_btn_start')}
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    document.getElementById('setup-wizard')?.scrollIntoView({ behavior: 'smooth' })
-                  }
-                  className="rounded-xl border-2 border-primary/30 bg-white/50 px-8 py-4 text-base font-bold text-primary backdrop-blur-sm hover:bg-white/70 dark:bg-white/10 dark:hover:bg-white/15"
+                  {t('club_btn_join')}
+                </a>
+                <a
+                  href="#club-plans"
+                  className="rounded-2xl border border-white/60 bg-white/70 px-8 py-4 text-sm font-bold text-slate-800 shadow-md backdrop-blur-md hover:bg-white dark:border-white/20 dark:bg-slate-900/60 dark:text-white dark:hover:bg-slate-900/80 transition-all text-center"
                 >
-                  {t('club_btn_setup')}
-                </button>
+                  {t('club_btn_plans')}
+                </a>
               </div>
-              {mySubscription && (
-                <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 text-green-700 dark:text-green-400 mt-2">
-                  <p className="text-sm font-bold flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4" />
-                    {t('club_active_plan')} {prettyPlanName(String(mySubscription?.planCode || mySubscription?.code || ''))}
-                  </p>
-                  {mySubscription.style && (
-                    <p className="text-xs mt-1 text-slate-600 dark:text-slate-300">
-                      {t('club_summary_style')} {mySubscription.style} | {t('club_summary_freq')} {mySubscription.frequency}
-                    </p>
-                  )}
-                </div>
-              )}
             </div>
 
-            <div className="relative aspect-square overflow-hidden rounded-[2.5rem] border border-white/35 bg-white/25 shadow-2xl backdrop-blur-md dark:bg-slate-900/30">
-              <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: `url('${FLOWER_BG}')` }}
+            <div className="relative aspect-square max-w-lg mx-auto w-full rounded-3xl overflow-hidden shadow-2xl border border-white/40 group">
+              <img
+                src="https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=1000&q=80"
+                alt="BirBuket Club Subscription"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6 rounded-2xl border border-white/30 bg-white/75 p-4 backdrop-blur-md dark:bg-slate-900/80 dark:border-white/10">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+              <div className="absolute bottom-6 left-6 right-6 rounded-2xl border border-white/30 bg-white/80 p-4 backdrop-blur-md dark:bg-slate-900/80 dark:border-white/10">
                 <div className="flex items-center gap-3">
                   <div className="flex -space-x-2">
                     {[1, 2, 3].map((i) => (
@@ -363,6 +574,12 @@ export default function BirBuketClub() {
             </div>
           </section>
 
+          {/* Delivery Tariffs Banner */}
+          <div className="mb-12">
+            <DeliveryTariffsInfo />
+          </div>
+
+          {/* Subscription Plans */}
           <section id="club-plans" className="mb-20 scroll-mt-24">
             <div className="mb-10 text-center">
               <h2 className="text-3xl font-bold text-slate-900 dark:text-white drop-shadow-sm">
@@ -370,9 +587,9 @@ export default function BirBuketClub() {
               </h2>
               <p className="mt-2 text-slate-700 dark:text-slate-300 mb-6">{t('club_plans_sub')}</p>
 
-              {/* Çatdırılma tezliyinə görə qiyməti tənzimləmək üçün düymələr */}
+              {/* Frequencies quick select */}
               <div className="inline-flex rounded-xl bg-white/50 dark:bg-slate-900/40 p-1 border border-white/30 backdrop-blur-sm">
-                {['Hər Həftə', '2 Həftədən Bir', 'Ayda Bir'].map((freq) => {
+                {clubSettings.frequencies.map((freq) => {
                   const isSelected = selectedFrequency === freq;
                   return (
                     <button
@@ -410,7 +627,7 @@ export default function BirBuketClub() {
                   {t('loading_api')}
                 </div>
               ) : (
-                normalizedPlans.map((plan, idx) => {
+                normalizedPlans.map((plan) => {
                   const isSelected = selectedPlanCode === plan.code;
                   const isPopular = String(plan.code).toUpperCase() === 'QUARTERLY';
                   return (
@@ -418,10 +635,10 @@ export default function BirBuketClub() {
                       key={plan.code}
                       className={`relative flex flex-col rounded-3xl border p-7 shadow-md backdrop-blur-md transition-all duration-300 ${
                         isSelected
-                          ? 'border-2 border-primary bg-white/90 dark:bg-slate-900/90 shadow-xl scale-[1.02] ring-4 ring-primary/10'
+                          ? 'border-2 border-primary bg-white/95 dark:bg-slate-900/95 shadow-xl scale-[1.02] ring-4 ring-primary/10'
                           : isPopular
-                          ? 'border-primary/45 bg-white/80 dark:bg-slate-900/75 shadow-md'
-                          : 'border-white/40 bg-white/70 hover:border-primary/40 dark:border-white/10 dark:bg-slate-900/65'
+                          ? 'border-primary/45 bg-white/85 dark:bg-slate-900/80 shadow-md'
+                          : 'border-white/40 bg-white/75 hover:border-primary/40 dark:border-white/10 dark:bg-slate-900/70'
                       }`}
                     >
                       {isPopular && (
@@ -452,7 +669,7 @@ export default function BirBuketClub() {
                         </li>
                         <li className="flex items-center gap-2">
                           <Truck className="w-4 h-4 text-primary shrink-0" />
-                          Prioritet çatdırılma
+                          Məsafəyə görə sürətli çatdırılma
                         </li>
                       </ul>
                       <button
@@ -476,15 +693,17 @@ export default function BirBuketClub() {
             </div>
           </section>
 
-          <section id="setup-wizard" className="rounded-[2.2rem] border border-white/35 bg-white/55 p-8 lg:p-10 shadow-lg backdrop-blur-lg dark:bg-slate-900/50 dark:border-white/10 scroll-mt-24">
+          {/* Setup Wizard Section */}
+          <section id="setup-wizard" className="rounded-[2.2rem] border border-white/35 bg-white/65 p-6 sm:p-8 lg:p-10 shadow-lg backdrop-blur-lg dark:bg-slate-900/60 dark:border-white/10 scroll-mt-24">
             <div className="mb-10 text-center">
               <h2 className="text-3xl font-bold text-slate-900 dark:text-white">{t('club_setup_title')}</h2>
               <p className="mt-2 text-slate-600 dark:text-slate-400">{t('club_setup_sub')}</p>
             </div>
 
+            {/* Stepper Tabs */}
             <div className="mx-auto mb-12 max-w-4xl">
               <div className="flex justify-between items-center relative">
-                {[t('club_step_1'), t('club_step_2'), t('club_step_3')].map((step, idx) => {
+                {['1. Üslub & Tezlik', '2. Çatdırılma & Xəritə', '3. Təsdiq & Ödəniş'].map((step, idx) => {
                   const stepNum = idx + 1;
                   const isActive = activeStep === stepNum;
                   const isCompleted = activeStep > stepNum;
@@ -510,7 +729,7 @@ export default function BirBuketClub() {
                       >
                         {isCompleted ? '✓' : stepNum}
                       </div>
-                      <span className={`text-xs font-bold transition-colors ${isActive ? 'text-primary' : 'text-slate-500'}`}>
+                      <span className={`text-xs font-bold transition-colors ${isActive ? 'text-primary' : 'text-slate-600 dark:text-slate-400'}`}>
                         {step}
                       </span>
                     </button>
@@ -524,13 +743,16 @@ export default function BirBuketClub() {
               </div>
             </div>
 
-            <div className="grid gap-10 lg:grid-cols-2">
-              <div className="flex flex-col gap-7 rounded-2xl border border-white/30 bg-white/40 p-6 backdrop-blur-md dark:bg-slate-900/40 dark:border-white/10">
+            <div className="grid gap-10 lg:grid-cols-12">
+              {/* Left column: Step Content */}
+              <div className="lg:col-span-7 flex flex-col gap-7 rounded-2xl border border-white/30 bg-white/50 p-6 backdrop-blur-md dark:bg-slate-900/50 dark:border-white/10">
+                
+                {/* STEP 1: Style & Frequency */}
                 {activeStep === 1 && (
                   <div className="flex flex-col gap-6">
                     <div>
                       <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">{t('club_step_style_title')}</h3>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {clubSettings.styles.map((styleObj) => {
                           const isSelectedStyle = selectedStyle === styleObj.name;
                           return (
@@ -538,13 +760,13 @@ export default function BirBuketClub() {
                               key={styleObj.name}
                               type="button"
                               onClick={() => setSelectedStyle(styleObj.name)}
-                              className={`relative flex cursor-pointer text-left flex-col gap-2 rounded-2xl border-2 p-3 transition-all ${
+                              className={`relative flex cursor-pointer text-left flex-col gap-2 rounded-2xl border-2 p-3.5 transition-all ${
                                 isSelectedStyle
                                   ? 'border-primary bg-primary/10 ring-2 ring-primary/20'
-                                  : 'border-white/50 bg-white/30 hover:border-primary/30 dark:border-white/10 dark:bg-white/5'
+                                  : 'border-white/50 bg-white/40 hover:border-primary/30 dark:border-white/10 dark:bg-white/5'
                               }`}
                             >
-                              <div className="w-full h-24 rounded-lg overflow-hidden border border-white/10 mb-2">
+                              <div className="w-full h-28 rounded-lg overflow-hidden border border-white/10 mb-2">
                                 <img
                                   src={styleObj.img}
                                   alt={styleObj.name}
@@ -553,11 +775,11 @@ export default function BirBuketClub() {
                               </div>
                               <div className="flex justify-between items-center w-full">
                                 <span className="font-bold text-slate-900 dark:text-white text-xs">{styleObj.name}</span>
-                                <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ${isSelectedStyle ? 'border-primary bg-primary' : 'border-slate-350 dark:border-slate-600'}`}>
+                                <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${isSelectedStyle ? 'border-primary bg-primary' : 'border-slate-350 dark:border-slate-600'}`}>
                                   {isSelectedStyle && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                                 </div>
                               </div>
-                              <span className="text-[10px] text-slate-600 dark:text-slate-400 leading-tight">
+                              <span className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
                                 {styleObj.desc}
                               </span>
                             </button>
@@ -565,9 +787,10 @@ export default function BirBuketClub() {
                         })}
                       </div>
                     </div>
+
                     <div>
                       <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">{t('club_step_freq_title')}</h3>
-                      <div className="flex gap-4">
+                      <div className="grid grid-cols-3 gap-3">
                         {clubSettings.frequencies.map((freq) => {
                           const isSelectedFreq = selectedFrequency === freq;
                           return (
@@ -575,7 +798,7 @@ export default function BirBuketClub() {
                               key={freq}
                               type="button"
                               onClick={() => setSelectedFrequency(freq)}
-                              className={`flex-1 rounded-xl py-3 text-sm font-bold transition-all ${
+                              className={`rounded-xl py-3.5 text-xs font-bold transition-all text-center ${
                                 isSelectedFreq
                                   ? 'bg-primary text-white shadow-md'
                                   : 'bg-white/60 hover:bg-white/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 backdrop-blur-sm'
@@ -587,6 +810,7 @@ export default function BirBuketClub() {
                         })}
                       </div>
                     </div>
+
                     <button
                       type="button"
                       onClick={() => setActiveStep(2)}
@@ -597,13 +821,18 @@ export default function BirBuketClub() {
                   </div>
                 )}
 
+                {/* STEP 2: Delivery Details & Interactive Baku Map */}
                 {activeStep === 2 && (
                   <div className="flex flex-col gap-6">
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">{t('club_delivery_info')}</h3>
-                    <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xl font-bold text-slate-900 dark:text-white">Çatdırılma & Xəritə Məlumatları</h3>
+                      <span className="text-xs font-bold text-primary">Bakı Daxili</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
-                          {t('club_recipient_name')}
+                          {t('club_recipient_name')} *
                         </label>
                         <input
                           type="text"
@@ -615,40 +844,140 @@ export default function BirBuketClub() {
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
-                          {t('club_phone')}
+                          {t('club_phone')} *
                         </label>
                         <input
                           type="text"
                           value={recipientPhone}
                           onChange={(e) => setRecipientPhone(e.target.value)}
-                          placeholder={t('club_phone_placeholder')}
+                          placeholder="+994 50 123 45 67"
                           className="w-full h-11 px-4 rounded-xl border border-slate-300 dark:border-white/10 bg-white/70 dark:bg-white/5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 dark:text-white"
                         />
                       </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
-                          {t('club_address')}
-                        </label>
-                        <textarea
-                          rows={3}
-                          value={deliveryAddress}
-                          onChange={(e) => setDeliveryAddress(e.target.value)}
-                          placeholder={t('club_address_placeholder')}
-                          className="w-full p-4 rounded-xl border border-slate-300 dark:border-white/10 bg-white/70 dark:bg-white/5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 dark:text-white resize-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
-                          {t('club_date')}
+                          İlk Çatdırılma Tarixi *
                         </label>
                         <input
                           type="date"
+                          min={minDateString}
                           value={firstDeliveryDate}
                           onChange={(e) => setFirstDeliveryDate(e.target.value)}
                           className="w-full h-11 px-4 rounded-xl border border-slate-300 dark:border-white/10 bg-white/70 dark:bg-white/5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 dark:text-white"
                         />
                       </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
+                          Çatdırılma Saatı Slotu *
+                        </label>
+                        <select
+                          value={deliveryTimeSlot}
+                          onChange={(e) => setDeliveryTimeSlot(e.target.value as DeliveryTimeSlot)}
+                          className="w-full h-11 px-4 rounded-xl border border-slate-300 dark:border-white/10 bg-white/70 dark:bg-white/5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 dark:text-white"
+                        >
+                          {DELIVERY_SLOTS.map((s) => (
+                            <option key={s.value} value={s.value} className="dark:bg-slate-900">
+                              {s.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
+
+                    {/* Interactive Leaflet Map for Baku */}
+                    <div className="space-y-3">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">
+                        Xəritədən Çatdırılma Ünvanını Seçin *
+                      </label>
+                      <form onSubmit={handleSearchLocation} className="flex gap-2">
+                        <div className="relative flex-1">
+                          <input
+                            type="text"
+                            value={mapSearchQuery}
+                            onChange={(e) => setMapSearchQuery(e.target.value)}
+                            placeholder="Bakı daxili küçə, bina və ya ərazi axtarın..."
+                            className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-300 dark:border-white/10 bg-white/70 dark:bg-white/5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 dark:text-white"
+                          />
+                          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={mapSearchLoading}
+                          className="px-4 h-10 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 disabled:opacity-60"
+                        >
+                          {mapSearchLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Axtar'}
+                        </button>
+                      </form>
+
+                      {mapError && (
+                        <p className="text-xs font-semibold text-red-600 dark:text-red-400">{mapError}</p>
+                      )}
+
+                      <div className="h-60 w-full rounded-2xl overflow-hidden border border-slate-300 dark:border-white/10 relative z-0">
+                        <MapContainer
+                          center={selectedLocation ? [selectedLocation.lat, selectedLocation.lng] : storeCenter}
+                          zoom={12}
+                          scrollWheelZoom={false}
+                          className="h-full w-full"
+                        >
+                          <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          />
+                          <MapClickSelector
+                            lat={selectedLocation?.lat ?? null}
+                            lng={selectedLocation?.lng ?? null}
+                            onPick={handlePickMapLocation}
+                          />
+                          <FlyToLocation
+                            lat={selectedLocation?.lat ?? null}
+                            lng={selectedLocation?.lng ?? null}
+                          />
+                        </MapContainer>
+                      </div>
+
+                      {distanceKm !== null && (
+                        <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs">
+                          <span className="font-semibold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                            <MapPin className="w-4 h-4 text-emerald-600" />
+                            Məsafə: <strong>{distanceKm} km</strong>
+                          </span>
+                          <span className="font-bold text-emerald-800 dark:text-emerald-300">
+                            Çatdırılma: {deliveryFee} AZN
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
+                        Dəqiq Ünvan (Küçə, Bina, Mənzil) *
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={deliveryAddress}
+                        onChange={(e) => setDeliveryAddress(e.target.value)}
+                        placeholder="Məsələn: Nizami küçəsi 45, bina 2, mənzil 18"
+                        className="w-full p-3.5 rounded-xl border border-slate-300 dark:border-white/10 bg-white/70 dark:bg-white/5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 dark:text-white resize-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-1.5">
+                        Kuryer / Sifariş Qeydi (İstəyə görə)
+                      </label>
+                      <input
+                        type="text"
+                        value={addressNote}
+                        onChange={(e) => setAddressNote(e.target.value)}
+                        placeholder="Məsələn: Blokun kodu 1234, qapını döyməyin"
+                        className="w-full h-11 px-4 rounded-xl border border-slate-300 dark:border-white/10 bg-white/70 dark:bg-white/5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 dark:text-white"
+                      />
+                    </div>
+
                     <div className="flex gap-4 mt-2">
                       <button
                         type="button"
@@ -675,9 +1004,51 @@ export default function BirBuketClub() {
                   </div>
                 )}
 
+                {/* STEP 3: Summary, Payment Method & Confirm */}
                 {activeStep === 3 && (
                   <div className="flex flex-col gap-6">
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white">{t('club_step_confirm_title')}</h3>
+                    
+                    {/* Payment Method Selection */}
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2.5">
+                        Ödəniş Üsulu
+                      </label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod('CARD')}
+                          className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all ${
+                            paymentMethod === 'CARD'
+                              ? 'border-primary bg-primary/10 text-primary font-bold shadow-sm'
+                              : 'border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
+                          }`}
+                        >
+                          <CreditCard className="w-5 h-5 shrink-0" />
+                          <div className="text-left">
+                            <p className="text-xs font-bold">Kartla Onlayn (Epoint)</p>
+                            <p className="text-[10px] opacity-75">Təhlükəsiz keçid</p>
+                          </div>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setPaymentMethod('CASH')}
+                          className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all ${
+                            paymentMethod === 'CASH'
+                              ? 'border-primary bg-primary/10 text-primary font-bold shadow-sm'
+                              : 'border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300'
+                          }`}
+                        >
+                          <Wallet className="w-5 h-5 shrink-0" />
+                          <div className="text-left">
+                            <p className="text-xs font-bold">Qapıda Nağd</p>
+                            <p className="text-[10px] opacity-75">Kuryerə ödəniş</p>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-5 text-sm">
                       <p className="font-semibold text-slate-800 dark:text-slate-200 mb-2">{t('club_confirm_sub')}</p>
                       <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">
@@ -699,22 +1070,31 @@ export default function BirBuketClub() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => void handleCheckout(selectedPlanCode)}
-                        disabled={Boolean(checkoutLoadingCode)}
-                        className="flex-1 rounded-xl bg-primary py-4 font-bold text-white hover:bg-primary/90 disabled:opacity-60 shadow-lg shadow-primary/20 transition-all text-center"
+                        onClick={() => void handleFinalCheckout()}
+                        disabled={checkoutLoading}
+                        className="flex-1 rounded-xl bg-primary py-4 font-bold text-white hover:bg-primary/90 disabled:opacity-60 shadow-lg shadow-primary/20 transition-all text-center flex items-center justify-center gap-2"
                       >
-                        {checkoutLoadingCode === selectedPlanCode ? t('club_btn_activating') : t('club_btn_activate')}
+                        {checkoutLoading ? (
+                          <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            {paymentMethod === 'CARD' ? 'Epoint-ə yönləndirilir...' : 'Sifariş tamamlanır...'}
+                          </>
+                        ) : paymentMethod === 'CARD' ? (
+                          'Ödənişə Keç (Epoint)'
+                        ) : (
+                          'Sifarişi Təsdiqlə'
+                        )}
                       </button>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Sağ tərəf: Sifariş Xülasəsi */}
-              <div className="flex flex-col gap-7">
-                <div className="rounded-3xl border border-white/35 bg-white/45 p-7 backdrop-blur-md dark:bg-slate-900/45 dark:border-white/10">
+              {/* Right column: Order Summary */}
+              <div className="lg:col-span-5 flex flex-col gap-6">
+                <div className="rounded-3xl border border-white/35 bg-white/60 p-6 sm:p-7 backdrop-blur-md dark:bg-slate-900/60 dark:border-white/10">
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-5">{t('club_summary_title')}</h3>
-                  <div className="flex flex-col gap-3 border-b border-primary/15 pb-5 text-sm">
+                  <div className="flex flex-col gap-3.5 border-b border-primary/15 pb-5 text-sm">
                     <div className="flex justify-between">
                       <span className="text-slate-600 dark:text-slate-400">{t('club_summary_plan')}</span>
                       <span className="font-bold text-slate-900 dark:text-white">
@@ -729,6 +1109,14 @@ export default function BirBuketClub() {
                       <span className="text-slate-600 dark:text-slate-400">{t('club_summary_freq')}</span>
                       <span className="font-bold text-slate-900 dark:text-white">{selectedFrequency}</span>
                     </div>
+                    {firstDeliveryDate && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 dark:text-slate-400">İlk Tarix / Saat:</span>
+                        <span className="font-bold text-slate-900 dark:text-white truncate max-w-[190px]">
+                          {firstDeliveryDate} ({DELIVERY_SLOTS.find(s => s.value === deliveryTimeSlot)?.label})
+                        </span>
+                      </div>
+                    )}
                     {recipientName && (
                       <div className="flex justify-between">
                         <span className="text-slate-600 dark:text-slate-400">{t('club_summary_recipient')}</span>
@@ -741,19 +1129,32 @@ export default function BirBuketClub() {
                         <span className="font-bold text-slate-900 dark:text-white truncate max-w-[180px]">{deliveryAddress}</span>
                       </div>
                     )}
-                    <div className="flex justify-between">
-                      <span className="text-slate-600 dark:text-slate-400">{t('club_summary_delivery')}</span>
-                      <span className="font-bold text-green-600 uppercase text-xs">{t('club_summary_free')}</span>
+                    
+                    <div className="pt-2 border-t border-slate-200/50 dark:border-white/5 space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 dark:text-slate-400">Abunəlik Qiyməti:</span>
+                        <span className="font-semibold text-slate-900 dark:text-white">{selectedPlanDetails.price} AZN</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-600 dark:text-slate-400">
+                          Çatdırılma Haqqı {distanceKm !== null ? `(${distanceKm} km)` : ''}:
+                        </span>
+                        <span className="font-bold text-emerald-600">
+                          {deliveryFee} AZN
+                        </span>
+                      </div>
                     </div>
                   </div>
+
                   <div className="flex items-center justify-between pt-5">
                     <span className="text-lg font-bold text-slate-900 dark:text-white">{t('club_summary_total')}</span>
                     <span className="text-3xl font-black text-primary">
-                      {selectedPlanDetails.price} AZN
+                      {grandTotal} AZN
                     </span>
                   </div>
                 </div>
-                <div className="rounded-2xl border border-white/35 bg-white/40 p-4 flex items-start gap-3 backdrop-blur-md dark:bg-slate-900/40">
+
+                <div className="rounded-2xl border border-white/35 bg-white/50 p-4 flex items-start gap-3 backdrop-blur-md dark:bg-slate-900/50">
                   <ShieldCheck className="w-5 h-5 mt-0.5 text-primary shrink-0" />
                   <p className="text-xs text-slate-600 dark:text-slate-400">
                     {t('club_security_tip')}
