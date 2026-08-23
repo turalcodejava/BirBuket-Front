@@ -22,6 +22,17 @@ export default function Header() {
   }, [location.pathname]);
 
   useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
+  useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
@@ -61,10 +72,10 @@ export default function Header() {
   ];
 
   return (
-    <header className={`sticky top-0 z-50 w-full transition-all duration-300 flex items-center justify-between px-4 md:px-6 lg:px-14 xl:px-20 py-3.5 ${
+    <header className={`sticky top-0 z-[9999] w-full transition-all duration-300 flex items-center justify-between px-4 md:px-6 lg:px-14 xl:px-20 py-3.5 ${
       isBirBagban
-        ? "bg-[#040f09]/85 backdrop-blur-md border-b border-[#143c24]"
-        : "bg-white/95 dark:bg-background-dark/90 backdrop-blur-md border-b border-floral-muted/5 dark:border-white/5"
+        ? "bg-[#040f09]/95 backdrop-blur-md border-b border-[#143c24]"
+        : "bg-white/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-floral-muted/5 dark:border-white/5"
     }`}>
       <div className="max-w-[1440px] w-full mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-5 lg:gap-8">
@@ -271,12 +282,11 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Mobile Drawer Navigation Menu */}
       {mobileMenuOpen && (
-        <div className={`fixed inset-x-0 top-[73px] bottom-0 z-[9999] w-full backdrop-blur-md flex flex-col p-6 md:hidden space-y-4 overflow-y-auto ${
+        <div className={`fixed inset-x-0 top-[68px] bottom-0 z-[99999] w-full flex flex-col p-6 md:hidden space-y-4 overflow-y-auto ${
           isBirBagban
-            ? 'bg-[#040f09]/95 border-t border-[#143c24]'
-            : 'bg-white/95 dark:bg-slate-900/95 border-t border-floral-muted/5 dark:border-white/5 shadow-2xl'
+            ? 'bg-[#040f09] border-t border-[#143c24]'
+            : 'bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-white/10 shadow-2xl'
         }`}>
           {/* Mobile Navigation Links */}
           <div className="flex flex-col gap-3 flex-shrink-0">
