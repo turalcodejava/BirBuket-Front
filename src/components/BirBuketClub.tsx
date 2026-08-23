@@ -1066,8 +1066,8 @@ export default function BirBuketClub() {
                         >
                           <CreditCard className="w-5 h-5 shrink-0" />
                           <div className="text-left">
-                            <p className="text-xs font-bold">Kartla Onlayn (Epoint)</p>
-                            <p className="text-[10px] opacity-75">Təhlükəsiz keçid</p>
+                            <p className="text-xs font-bold">Kartla Onlayn</p>
+                            <p className="text-[10px] opacity-75">Təhlükəsiz ödəniş</p>
                           </div>
                         </button>
 
@@ -1117,12 +1117,10 @@ export default function BirBuketClub() {
                         {checkoutLoading ? (
                           <>
                             <Loader2 className="w-5 h-5 animate-spin" />
-                            {paymentMethod === 'CARD' ? 'Epoint-ə yönləndirilir...' : 'Sifariş tamamlanır...'}
+                            {paymentMethod === 'CARD' ? 'Ödənişə yönləndirilir...' : 'Sifariş tamamlanır...'}
                           </>
-                        ) : paymentMethod === 'CARD' ? (
-                          'Ödənişə Keç (Epoint)'
                         ) : (
-                          'Sifarişi Təsdiqlə'
+                          'Ödəniş et'
                         )}
                       </button>
                     </div>
