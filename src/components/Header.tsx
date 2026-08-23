@@ -1,6 +1,7 @@
-import { Search, Sparkles, Moon, Sun, User, ShoppingBasket, Globe, Menu, X } from 'lucide-react';
+import { Search, Sparkles, Moon, Sun, User, ShoppingBasket, Globe, Menu, X, LogOut, Package } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -218,41 +219,52 @@ export default function Header() {
           </motion.button>
           
           {user ? (
-            <div className="flex items-center gap-3">
-              <Link to="/cart" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <div className="flex items-center gap-2 lg:gap-3">
+              <Link to="/cart" className="flex items-center hover:opacity-80 transition-opacity">
                 <div className={`p-2.5 rounded-full border flex items-center justify-center ${
                   isBirBagban
                     ? 'bg-[#06190f]/60 border-[#143c24] text-primary hover:bg-[#143c23]'
-                    : 'p-2.5 rounded-full bg-primary/10 text-primary border border-primary/20'
+                    : 'bg-primary/10 text-primary border border-primary/20'
                 }`}>
                   <ShoppingBasket className="w-5 h-5" />
                 </div>
               </Link>
-              <Link to="/account" className="flex items-center gap-3 hover:opacity-80 transition-opacity hidden md:flex">
+              <Link to="/account" className="flex items-center hover:opacity-80 transition-opacity">
                 <div className={`p-2.5 rounded-full border flex items-center justify-center ${
                   isBirBagban
                     ? 'bg-[#06190f]/60 border-[#143c24] text-primary hover:bg-[#143c23]'
-                    : 'p-2.5 rounded-full bg-primary/20 text-primary border border-primary/30'
+                    : 'bg-primary/20 text-primary border border-primary/30'
                 }`}>
                   <User className="w-5 h-5" />
                 </div>
               </Link>
             </div>
           ) : (
-            <Link to="/login" className="hidden md:block">
-              <motion.button 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`p-2.5 rounded-full border flex items-center justify-center ${
+            <div className="flex items-center gap-2">
+              <Link to="/cart" className="flex items-center hover:opacity-80 transition-opacity">
+                <div className={`p-2.5 rounded-full border flex items-center justify-center ${
                   isBirBagban
                     ? 'bg-[#06190f]/60 border-[#143c24] text-primary hover:bg-[#143c23]'
-                    : 'p-2.5 rounded-full bg-primary/10 text-primary border border-primary/20'
-                }`}
-                title="Daxil ol"
-              >
-                <User className="w-5 h-5" />
-              </motion.button>
-            </Link>
+                    : 'bg-primary/10 text-primary border border-primary/20'
+                }`}>
+                  <ShoppingBasket className="w-5 h-5" />
+                </div>
+              </Link>
+              <Link to="/login">
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`p-2.5 rounded-full border flex items-center justify-center ${
+                    isBirBagban
+                      ? 'bg-[#06190f]/60 border-[#143c24] text-primary hover:bg-[#143c23]'
+                      : 'bg-primary/10 text-primary border border-primary/20'
+                  }`}
+                  title="Daxil ol"
+                >
+                  <User className="w-5 h-5" />
+                </motion.button>
+              </Link>
+            </div>
           )}
 
           <Link to="/studio" className="hidden xl:flex">
@@ -282,130 +294,185 @@ export default function Header() {
         </div>
       </div>
 
-      {mobileMenuOpen && (
-        <div className={`fixed inset-x-0 top-[68px] bottom-0 z-[99999] w-full flex flex-col p-6 md:hidden space-y-4 overflow-y-auto ${
-          isBirBagban
-            ? 'bg-[#040f09] border-t border-[#143c24]'
-            : 'bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-white/10 shadow-2xl'
-        }`}>
-          {/* Mobile Navigation Links */}
-          <div className="flex flex-col gap-3 flex-shrink-0">
-            {navItems.map((item) => {
-              const isClubSoon = item.path === '/birbuketclub';
-              return (
-                <NavLink
-                  key={item.name}
-                  to={item.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) => {
-                    const base = "block py-3.5 px-6 rounded-2xl text-sm font-black uppercase tracking-wider transition-all border ";
-                    if (isBirBagban) {
-                      return base + (isActive
-                        ? 'bg-primary/20 border-primary text-primary'
-                        : 'bg-black/25 border-transparent text-[#acd5bc] hover:text-white');
-                    }
-                    return base + (isActive
-                      ? 'bg-primary/10 border-primary/20 text-primary'
-                      : isClubSoon
-                        ? 'bg-[#f8f9f8] dark:bg-white/5 border-transparent text-floral-deep/80 dark:text-floral-deep-dark/80 hover:text-red-500'
-                        : 'bg-[#f8f9f8] dark:bg-white/5 border-transparent text-floral-deep/80 dark:text-floral-deep-dark/80 hover:text-primary');
-                  }}
-                >
-                  {item.name}
-                </NavLink>
-              );
-            })}
-            
-            <Link to="/studio" onClick={() => setMobileMenuOpen(false)}>
-              <button className="w-full bg-primary text-floral-deep py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm">
-                <Sparkles className="w-4 h-4" />
-                <span>BirBuket Yarat</span>
-              </button>
+      {/* Full-Screen Portal-Based Mobile Drawer Navigation Menu */}
+      {typeof document !== 'undefined' && mobileMenuOpen && createPortal(
+        <div className="fixed inset-0 z-[999999] w-screen h-[100dvh] bg-white dark:bg-[#08100b] flex flex-col text-slate-900 dark:text-white animate-in fade-in duration-200">
+          {/* Top Bar inside Drawer */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200/80 dark:border-white/10 shrink-0 bg-white dark:bg-[#08100b]">
+            <Link to="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-2xl bg-white p-1 shadow-sm border border-floral-muted/20 dark:bg-white/90">
+                <img
+                  src="/birbuket-logo.svg"
+                  alt="BirBuket"
+                  className="h-full w-full object-contain"
+                />
+              </div>
+              <span className="text-xl font-extrabold tracking-tight text-floral-deep dark:text-floral-deep-dark">
+                BirBuket
+              </span>
             </Link>
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(false)}
+              className="p-2.5 rounded-full border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-white hover:bg-slate-200 transition-colors"
+              title="Bağla"
+            >
+              <X className="w-6 h-6" />
+            </button>
           </div>
 
-          {/* Divider */}
-          <div className="h-px bg-slate-200 dark:bg-white/10 my-2" />
-
-          {/* Bottom Settings & User Row */}
-          <div className="flex flex-col gap-4 mt-auto">
-            {/* Lang & Theme Row */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-              {/* Language Selector */}
-              <div className="flex items-center gap-2 justify-between">
-                <div className="flex items-center gap-2">
-                  <Globe className="w-5 h-5 text-slate-400" />
-                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Dil:</span>
+          {/* Scrollable Drawer Content */}
+          <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+            {/* Quick Action: BirBuket Yarat */}
+            <Link to="/studio" onClick={() => setMobileMenuOpen(false)}>
+              <div className="w-full bg-gradient-to-r from-primary via-emerald-400 to-primary text-black font-black p-4 rounded-2xl flex items-center justify-between shadow-lg shadow-primary/20">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-black/10 rounded-xl">
+                    <Sparkles className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black uppercase tracking-wider leading-none">BirBuket Yarat</h3>
+                    <p className="text-xs font-semibold opacity-80 mt-0.5">3D Dizayn və AI Render</p>
+                  </div>
                 </div>
-                <div className="flex gap-1.5">
-                  {['az', 'ru', 'en', 'uz'].map((lang) => (
+                <span className="text-xs uppercase bg-black text-white px-3 py-1.5 rounded-xl font-bold">Aç</span>
+              </div>
+            </Link>
+
+            {/* Navigation Links */}
+            <div className="flex flex-col gap-2">
+              <p className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1 px-1">Menyu</p>
+              {navItems.map((item) => {
+                const isClubSoon = item.path === '/birbuketclub';
+                return (
+                  <NavLink
+                    key={item.name}
+                    to={item.path}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={({ isActive }) => {
+                      const base = "flex items-center justify-between py-3.5 px-5 rounded-2xl text-sm font-black transition-all border ";
+                      return base + (isActive
+                        ? 'bg-primary/15 border-primary/30 text-primary'
+                        : isClubSoon
+                          ? 'bg-slate-50 dark:bg-white/5 border-transparent text-slate-700 dark:text-slate-200 hover:text-red-500'
+                          : 'bg-slate-50 dark:bg-white/5 border-transparent text-slate-700 dark:text-slate-200 hover:text-primary');
+                    }}
+                  >
+                    <span>{item.name}</span>
+                    {item.path === '/studio' ? (
+                      <Sparkles className="w-4 h-4 text-primary" />
+                    ) : null}
+                  </NavLink>
+                );
+              })}
+            </div>
+
+            {/* User Account Section */}
+            <div className="space-y-2">
+              <p className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1 px-1">Hesabım</p>
+              {user ? (
+                <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="size-11 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-lg shrink-0">
+                      {String(user.name || user.username || 'U').charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-sm font-bold leading-tight truncate">
+                        {user.name ? `${user.name} ${user.surname || ''}` : user.username}
+                      </h4>
+                      <p className="text-xs text-slate-400 truncate">{user.email || user.phone || ''}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/60 dark:border-white/10">
+                    <Link to="/account" onClick={() => setMobileMenuOpen(false)} className="w-full">
+                      <button className="w-full py-2.5 rounded-xl text-xs font-black bg-primary text-black flex items-center justify-center gap-1.5">
+                        <User className="w-4 h-4" />
+                        Şəxsi Kabinet
+                      </button>
+                    </Link>
+                    <Link to="/account/orders" onClick={() => setMobileMenuOpen(false)} className="w-full">
+                      <button className="w-full py-2.5 rounded-xl text-xs font-black bg-slate-200 dark:bg-white/10 text-slate-800 dark:text-white flex items-center justify-center gap-1.5">
+                        <Package className="w-4 h-4" />
+                        Sifarişlərim
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <Link to="/login" className="w-full" onClick={() => setMobileMenuOpen(false)}>
+                    <button className="w-full py-3.5 rounded-2xl text-xs font-black border border-slate-200 dark:border-white/10 text-slate-800 dark:text-white bg-slate-100/70 dark:bg-white/5 flex items-center justify-center gap-2">
+                      <User className="w-4 h-4" />
+                      Daxil ol
+                    </button>
+                  </Link>
+                  <Link to="/register" className="w-full" onClick={() => setMobileMenuOpen(false)}>
+                    <button className="w-full py-3.5 rounded-2xl text-xs font-black bg-primary text-black shadow-md shadow-primary/20">
+                      Qeydiyyat
+                    </button>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Language & Theme Controls */}
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 space-y-4">
+              {/* Language Selector */}
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Globe className="w-4 h-4 text-primary" />
+                  <span className="text-xs font-black uppercase text-slate-500 dark:text-slate-400">Dil seçimi</span>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { code: 'az', label: 'AZ' },
+                    { code: 'ru', label: 'RU' },
+                    { code: 'en', label: 'EN' },
+                    { code: 'uz', label: 'UZ' },
+                  ].map((lang) => (
                     <button
-                      key={lang}
+                      key={lang.code}
                       type="button"
-                      onClick={() => changeLanguage(lang as any)}
-                      className={`px-2.5 py-1.5 rounded-lg text-xs font-black uppercase transition-all ${
-                        language === lang
-                          ? 'bg-primary text-black'
-                          : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400'
+                      onClick={() => changeLanguage(lang.code as any)}
+                      className={`py-2 rounded-xl text-xs font-black uppercase transition-all ${
+                        language === lang.code
+                          ? 'bg-primary text-black shadow-sm'
+                          : 'bg-white dark:bg-white/10 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/5'
                       }`}
                     >
-                      {lang}
+                      {lang.label}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Theme Toggle */}
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className={`p-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold ${
-                  isBirBagban
-                    ? 'bg-[#06190f]/60 border-[#143c24] text-[#a4ccb2]'
-                    : 'bg-slate-100 dark:bg-slate-800 border-transparent text-slate-700 dark:text-white'
-                }`}
-              >
-                {isDark ? <Sun className="w-4 h-4 text-yellow-400" /> : <Moon className="w-4 h-4" />}
-                <span>{isDark ? "Açıq Rejim" : "Tünd Rejim"}</span>
-              </button>
+              {/* Theme Selector */}
+              <div>
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className="w-full py-2.5 px-4 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/10 flex items-center justify-between text-xs font-bold"
+                >
+                  <span className="text-slate-600 dark:text-slate-300">Görünüş rejimi</span>
+                  <div className="flex items-center gap-2 font-black">
+                    {isDark ? (
+                      <>
+                        <Moon className="w-4 h-4 text-primary" />
+                        <span>Tünd Rejim</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sun className="w-4 h-4 text-amber-500" />
+                        <span>Açıq Rejim</span>
+                      </>
+                    )}
+                  </div>
+                </button>
+              </div>
             </div>
-
-            {/* User Account / Login Button */}
-            {user ? (
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
-                <div className="flex items-center gap-3">
-                  <div className="size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
-                    {String(user.name || user.username || 'U').charAt(0).toUpperCase()}
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-none mb-1 truncate">
-                      {user.name} {user.surname}
-                    </h4>
-                    <p className="text-xs text-slate-400 truncate">{user.email}</p>
-                  </div>
-                </div>
-                <Link to="/account" onClick={() => setMobileMenuOpen(false)}>
-                  <button className="text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-xl shrink-0">
-                    Profil
-                  </button>
-                </Link>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-3">
-                <Link to="/login" className="w-full" onClick={() => setMobileMenuOpen(false)}>
-                  <button className="w-full py-3 rounded-2xl text-xs font-bold border border-slate-200 dark:border-white/10 text-slate-700 dark:text-white bg-slate-50/50 dark:bg-white/[0.02]">
-                    Daxil ol
-                  </button>
-                </Link>
-                <Link to="/register" className="w-full" onClick={() => setMobileMenuOpen(false)}>
-                  <button className="w-full py-3 rounded-2xl text-xs font-bold bg-primary text-floral-deep">
-                    Qeydiyyat
-                  </button>
-                </Link>
-              </div>
-            )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </header>
   );
