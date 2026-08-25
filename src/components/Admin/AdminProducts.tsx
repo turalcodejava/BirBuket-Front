@@ -336,12 +336,23 @@ export default function AdminProducts() {
     setSavingId(row.id); setError("");
     try {
       const patchBody: Record<string, unknown> = {
-        productName: d.productName.trim(), description: d.description.trim(),
-        price, color: d.colorInput.trim().toUpperCase(), discountPercentage: discount,
-        active: d.active, featured: d.featured, renderActive: d.renderActive,
-        birToyActive: d.birToyActive, aciqcaActive: d.aciqcaActive,
+        productName: d.productName.trim(),
+        description: d.description.trim(),
+        price,
+        discountPercentage: discount,
+        active: Boolean(d.active),
+        featured: Boolean(d.featured),
+        renderActive: Boolean(d.renderActive),
+        birToyActive: Boolean(d.birToyActive),
+        aciqcaActive: Boolean(d.aciqcaActive),
       };
-      if (d.productType) patchBody.productType = d.productType;
+      const cleanColor = d.colorInput ? d.colorInput.trim().toUpperCase() : '';
+      if (cleanColor && COLOR_OPTIONS.includes(cleanColor)) {
+        patchBody.color = cleanColor;
+      }
+      if (d.productType) {
+        patchBody.productType = d.productType;
+      }
       let updatedProduct: any;
       if (d.mainImageFile) {
         updatedProduct = await productService.update(row.id, patchBody, [d.mainImageFile]);
