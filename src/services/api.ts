@@ -2942,4 +2942,47 @@ export const plantDoctorService = {
   },
 };
 
+export const flowerAiService = {
+  analyzeFlowerImage: async (
+    base64OrFile: string | File
+  ): Promise<{
+    productName: string;
+    description: string;
+    color: string;
+    suggestedPrice: number;
+  }> => {
+    let base64 = '';
+    let mimeType = 'image/jpeg';
+    if (typeof base64OrFile === 'string') {
+      base64 = base64OrFile;
+      if (base64.startsWith('data:')) {
+        const match = base64.match(/^data:([^;]+);base64,/);
+        if (match) mimeType = match[1];
+      }
+    } else {
+      mimeType = base64OrFile.type || 'image/jpeg';
+      base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(base64OrFile);
+      });
+    }
+
+    try {
+      const res = await apiClient.post<any>('/api/bouquet/analyze-flower', {
+        base64,
+        mimeType,
+      });
+      return res.data?.data || res.data;
+    } catch {
+      return {
+        productName: 'Təravətli Çiçək Buketi',
+        description: 'Təbii və estetik çiçəklərdən hazırlanmış özəl kompozisiya.',
+        color: 'RED',
+        suggestedPrice: 50,
+      };
+    }
+  },
+};
+
 export default apiClient;

@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Boxes, ChevronDown, ChevronLeft, ChevronRight, ChevronUp,
-  ImageIcon, Loader2, PencilLine, Plus, Save, Trash2, Upload, X,
+  ImageIcon, Loader2, PencilLine, Plus, Save, Sparkles, Trash2, Upload, X,
 } from "lucide-react";
-import { productService, categoryService } from "../../services/api";
+import { productService, categoryService, flowerAiService } from "../../services/api";
 
 const API_BASE = String(
   (import.meta as any).env?.VITE_API_BASE_URL || ""
@@ -154,32 +154,59 @@ export default function AdminProducts() {
   const [newImagePreview, setNewImagePreview] = useState("");
   const [modalLoading, setModalLoading] = useState(false);
   const [bulkLoading, setBulkLoading] = useState(false);
-  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
+  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0, statusText: "" });
+  const [useAiForBulk, setUseAiForBulk] = useState(true);
+  const [aiAnalyzingId, setAiAnalyzingId] = useState<number | null>(null);
 
   const handleBulkFilesSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
     setBulkLoading(true);
     setError("");
-    setBulkProgress({ current: 0, total: files.length });
+    setBulkProgress({ current: 0, total: files.length, statusText: "Başlayır..." });
 
     let successCount = 0;
     const catId = categories[0]?.id || 1;
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      setBulkProgress({ current: i + 1, total: files.length });
-      
-      const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim();
-      const draftName = cleanName.length > 0 
-        ? cleanName.charAt(0).toUpperCase() + cleanName.slice(1) 
-        : `Qaralama Buket #${i + 1}`;
+      setBulkProgress({
+        current: i + 1,
+        total: files.length,
+        statusText: useAiForBulk ? `AI ${file.name} şəklini təhlil edir...` : `Yüklənir: ${file.name}`,
+      });
+
+      let productName = "";
+      let description = "Təbii və estetik gül buketləri.";
+      let color = "RED";
+      let price = 0;
+
+      if (useAiForBulk) {
+        try {
+          const aiResult = await flowerAiService.analyzeFlowerImage(file);
+          if (aiResult) {
+            productName = aiResult.productName || "";
+            description = aiResult.description || description;
+            color = aiResult.color || "RED";
+            price = aiResult.suggestedPrice || 0;
+          }
+        } catch (aiErr) {
+          console.warn("AI analysis fallback for:", file.name, aiErr);
+        }
+      }
+
+      if (!productName) {
+        const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim();
+        productName = cleanName.length > 0
+          ? cleanName.charAt(0).toUpperCase() + cleanName.slice(1)
+          : `Qaralama Buket #${i + 1}`;
+      }
 
       try {
         await productService.create({
           product: {
-            productName: `${draftName} (Qaralama)`,
-            description: "Şəkil yüklənib. Zəhmət olmasa təsvir və qiyməti tamamlayın.",
+            productName: `${productName} (Qaralama)`,
+            description,
             productType: "FLOWER",
             productCategoryId: catId,
             isSingle: false,
@@ -189,8 +216,8 @@ export default function AdminProducts() {
             birToyActive: false,
             aciqcaActive: false,
             discountPercentage: 0,
-            price: 0,
-            color: "RED",
+            price,
+            color,
           },
           images: [file],
         });
@@ -201,7 +228,7 @@ export default function AdminProducts() {
     }
 
     setBulkLoading(false);
-    setNotice(`${successCount} ədəd şəkil qaralama məhsul kimi (deaktiv) əlavə edildi.`);
+    setNotice(`✨ ${successCount} ədəd şəkil AI analizi ilə qaralama məhsul kimi (deaktiv) əlavə edildi.`);
     e.target.value = "";
     void loadPage(0);
   };
@@ -373,9 +400,19 @@ export default function AdminProducts() {
               className="rounded-lg border border-floral-muted/20 px-3 py-1.5 text-xs font-bold hover:bg-primary/10 disabled:opacity-50 dark:border-white/15">
               Yenile
             </button>
+            <label className="inline-flex items-center gap-1.5 cursor-pointer select-none text-xs font-bold text-purple-700 dark:text-purple-300 bg-purple-500/10 px-2.5 py-1.5 rounded-lg border border-purple-500/30">
+              <input
+                type="checkbox"
+                checked={useAiForBulk}
+                onChange={e => setUseAiForBulk(e.target.checked)}
+                className="rounded accent-purple-600"
+              />
+              <Sparkles className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
+              <span>AI ilə Ad və Rəng Təhlili</span>
+            </label>
             <label className={`inline-flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white hover:bg-primary/20 transition-all cursor-pointer shadow-sm ${bulkLoading ? 'opacity-50 pointer-events-none' : ''}`}>
               <Upload className="h-3.5 w-3.5 text-primary" />
-              <span>{bulkLoading ? `Yüklənir (${bulkProgress.current}/${bulkProgress.total})...` : '📁 Toplu Şəkil Yüklə (Qaralama)'}</span>
+              <span>{bulkLoading ? `${bulkProgress.statusText || 'Yüklənir...'} (${bulkProgress.current}/${bulkProgress.total})` : '📁 Toplu Şəkil Yüklə (Qaralama)'}</span>
               <input
                 type="file"
                 multiple
@@ -538,11 +575,53 @@ export default function AdminProducts() {
                                   </label>
                                 ))}
                               </div>
-                              <div className="mt-5 flex items-center gap-3">
+                              <div className="mt-5 flex flex-wrap items-center gap-3">
                                 <button type="button" disabled={savingId === row.id} onClick={() => void saveProduct(row)}
                                   className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-xs font-black text-black hover:opacity-90 disabled:opacity-50">
                                   {savingId === row.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                                   Mehsulu Saxla
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={aiAnalyzingId === row.id || (!drafts[row.id]?.mainImageFile && !drafts[row.id]?.mainImagePreview && !row.mainImageUrl)}
+                                  onClick={async () => {
+                                    const img = drafts[row.id]?.mainImageFile || drafts[row.id]?.mainImagePreview || row.mainImageUrl;
+                                    if (!img) return;
+                                    setAiAnalyzingId(row.id);
+                                    try {
+                                      const res = await flowerAiService.analyzeFlowerImage(img);
+                                      if (res) {
+                                        setDrafts(prev => ({
+                                          ...prev,
+                                          [row.id]: {
+                                            ...(prev[row.id] ?? seedDraft(row)),
+                                            productName: res.productName || prev[row.id]?.productName || '',
+                                            description: res.description || prev[row.id]?.description || '',
+                                            colorInput: res.color || prev[row.id]?.colorInput || 'RED',
+                                            priceInput: res.suggestedPrice ? String(res.suggestedPrice) : prev[row.id]?.priceInput || '',
+                                          }
+                                        }));
+                                        setNotice("✨ AI gülün şəklini təhlil edib məlumatları doldurdu.");
+                                      }
+                                    } catch (err) {
+                                      setError("AI təhlili zamanı xəta baş verdi.");
+                                    } finally {
+                                      setAiAnalyzingId(null);
+                                    }
+                                  }}
+                                  className="inline-flex items-center gap-2 rounded-xl border border-purple-500/40 bg-purple-500/10 px-4 py-2.5 text-xs font-black text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 disabled:opacity-50 transition-all shadow-sm"
+                                >
+                                  {aiAnalyzingId === row.id ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                      AI Təhlil Edir...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                                      ✨ AI ilə Doldur (Ad, Təsvir, Rəng)
+                                    </>
+                                  )}
                                 </button>
                                 <button type="button" onClick={() => setExpandedId(null)}
                                   className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold hover:bg-slate-50 dark:border-white/15 dark:hover:bg-white/5">
