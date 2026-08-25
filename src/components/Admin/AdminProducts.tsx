@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Boxes, ChevronDown, ChevronLeft, ChevronRight, ChevronUp,
-  ImageIcon, Loader2, PencilLine, Plus, Save, Sparkles, Trash2, Upload, X,
+  ImageIcon, Loader2, PencilLine, Plus, Save, Sparkles, Trash2, Upload, X, ZoomIn,
 } from "lucide-react";
 import { productService, categoryService, flowerAiService } from "../../services/api";
 
@@ -99,10 +99,36 @@ function seedDraft(row: ProductRow): ProductDraft {
   };
 }
 
-function Thumb({ src, alt, className = "h-12 w-12" }: { src: string; alt: string; className?: string }) {
-  const box = `shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 dark:border-white/10 ${className}`;
+function Thumb({
+  src,
+  alt,
+  className = "h-12 w-12",
+  onZoom,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  onZoom?: (src: string, alt: string) => void;
+}) {
+  const box = `relative group shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100 dark:border-white/10 ${className} ${src ? 'cursor-pointer hover:border-primary hover:shadow-md transition-all' : ''}`;
   if (!src) return <div className={`flex items-center justify-center text-slate-400 ${box}`}><ImageIcon className="h-5 w-5" /></div>;
-  return <div className={box}><img src={src} alt={alt} className="h-full w-full object-cover" loading="lazy" /></div>;
+  return (
+    <div
+      className={box}
+      onClick={(e) => {
+        if (onZoom && src) {
+          e.stopPropagation();
+          onZoom(src, alt);
+        }
+      }}
+      title="Böyük formatda baxmaq üçün klikləyin"
+    >
+      <img src={src} alt={alt} className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-200" loading="lazy" />
+      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+        <ZoomIn className="w-4 h-4 text-white drop-shadow" />
+      </div>
+    </div>
+  );
 }
 
 function Toggle({ checked, onChange, disabled, label, color = "primary" }: {
@@ -157,6 +183,7 @@ export default function AdminProducts() {
   const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0, statusText: "" });
   const [useAiForBulk, setUseAiForBulk] = useState(true);
   const [aiAnalyzingId, setAiAnalyzingId] = useState<number | null>(null);
+  const [previewModal, setPreviewModal] = useState<{ url: string; title: string } | null>(null);
 
   const handleBulkFilesSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -467,7 +494,13 @@ export default function AdminProducts() {
                   {rows.map(row => (
                     <React.Fragment key={row.id}>
                       <tr className={`align-middle bg-white dark:bg-transparent ${!row.active ? "opacity-60" : ""}`}>
-                        <td className="px-3 py-2.5 pl-4"><Thumb src={row.mainImageUrl} alt={row.productName} /></td>
+                        <td className="px-3 py-2.5 pl-4">
+                          <Thumb
+                            src={row.mainImageUrl}
+                            alt={row.productName}
+                            onZoom={(url, title) => setPreviewModal({ url, title })}
+                          />
+                        </td>
                         <td className="whitespace-nowrap px-3 py-2.5 font-mono font-bold text-xs text-slate-500">#{row.id}</td>
                         <td className="px-3 py-2.5">
                           <p className="font-semibold leading-snug">{row.productName}</p>
@@ -552,8 +585,18 @@ export default function AdminProducts() {
                                       reader.readAsDataURL(file);
                                     }} />
                                   {(drafts[row.id]?.mainImagePreview || row.mainImageUrl) && (
-                                    <div className="mt-2 h-16 w-16 overflow-hidden rounded-lg border border-slate-200">
-                                      <img src={drafts[row.id]?.mainImagePreview || row.mainImageUrl} alt="Preview" className="h-full w-full object-cover" />
+                                    <div
+                                      onClick={() => setPreviewModal({
+                                        url: drafts[row.id]?.mainImagePreview || row.mainImageUrl,
+                                        title: drafts[row.id]?.productName || row.productName,
+                                      })}
+                                      className="mt-2 h-16 w-16 overflow-hidden rounded-lg border-2 border-slate-200 hover:border-primary cursor-pointer relative group transition-all shadow-sm"
+                                      title="Böyük formatda baxmaq üçün klikləyin"
+                                    >
+                                      <img src={drafts[row.id]?.mainImagePreview || row.mainImageUrl} alt="Preview" className="h-full w-full object-cover group-hover:scale-110 transition-transform" />
+                                      <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                        <ZoomIn className="w-4 h-4 text-white drop-shadow" />
+                                      </div>
                                     </div>
                                   )}
                                 </div>
@@ -754,6 +797,42 @@ export default function AdminProducts() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Large Image Zoom Preview Modal */}
+        {previewModal && (
+          <div
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md animate-in fade-in duration-200"
+            onClick={() => setPreviewModal(null)}
+          >
+            <div
+              className="relative max-w-4xl max-h-[92vh] flex flex-col items-center justify-center bg-slate-900/95 rounded-3xl p-3 sm:p-5 border border-white/20 shadow-2xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => setPreviewModal(null)}
+                className="absolute top-4 right-4 z-10 p-2.5 rounded-full bg-black/70 text-white hover:bg-black/90 transition-all border border-white/20 shadow-md"
+                title="Bağla"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="max-h-[80vh] overflow-hidden rounded-2xl flex items-center justify-center bg-black/30 p-2">
+                <img
+                  src={previewModal.url}
+                  alt={previewModal.title}
+                  className="max-h-[76vh] w-auto max-w-full object-contain rounded-xl shadow-2xl"
+                />
+              </div>
+
+              {previewModal.title && (
+                <div className="mt-3 text-center px-4">
+                  <p className="text-sm font-bold text-white tracking-wide">{previewModal.title}</p>
+                </div>
+              )}
             </div>
           </div>
         )}
