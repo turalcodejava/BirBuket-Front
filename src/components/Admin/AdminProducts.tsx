@@ -1,7 +1,7 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Boxes, ChevronDown, ChevronLeft, ChevronRight, ChevronUp,
-  ImageIcon, Loader2, PencilLine, Plus, Save, Trash2, X,
+  ImageIcon, Loader2, PencilLine, Plus, Save, Trash2, Upload, X,
 } from "lucide-react";
 import { productService, categoryService } from "../../services/api";
 
@@ -153,6 +153,58 @@ export default function AdminProducts() {
   const [newImage, setNewImage] = useState<File | null>(null);
   const [newImagePreview, setNewImagePreview] = useState("");
   const [modalLoading, setModalLoading] = useState(false);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
+
+  const handleBulkFilesSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setBulkLoading(true);
+    setError("");
+    setBulkProgress({ current: 0, total: files.length });
+
+    let successCount = 0;
+    const catId = categories[0]?.id || 1;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      setBulkProgress({ current: i + 1, total: files.length });
+      
+      const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim();
+      const draftName = cleanName.length > 0 
+        ? cleanName.charAt(0).toUpperCase() + cleanName.slice(1) 
+        : `Qaralama Buket #${i + 1}`;
+
+      try {
+        await productService.create({
+          product: {
+            productName: `${draftName} (Qaralama)`,
+            description: "Şəkil yüklənib. Zəhmət olmasa təsvir və qiyməti tamamlayın.",
+            productType: "FLOWER",
+            productCategoryId: catId,
+            isSingle: false,
+            active: false, // DEAKTIV QARALAMA
+            featured: false,
+            renderActive: false,
+            birToyActive: false,
+            aciqcaActive: false,
+            discountPercentage: 0,
+            price: 0,
+            color: "RED",
+          },
+          images: [file],
+        });
+        successCount++;
+      } catch (err: any) {
+        console.warn(`Error uploading ${file.name}:`, err);
+      }
+    }
+
+    setBulkLoading(false);
+    setNotice(`${successCount} ədəd şəkil qaralama məhsul kimi (deaktiv) əlavə edildi.`);
+    e.target.value = "";
+    void loadPage(0);
+  };
 
   useEffect(() => {
     if (!notice) return;
@@ -321,6 +373,18 @@ export default function AdminProducts() {
               className="rounded-lg border border-floral-muted/20 px-3 py-1.5 text-xs font-bold hover:bg-primary/10 disabled:opacity-50 dark:border-white/15">
               Yenile
             </button>
+            <label className={`inline-flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white hover:bg-primary/20 transition-all cursor-pointer shadow-sm ${bulkLoading ? 'opacity-50 pointer-events-none' : ''}`}>
+              <Upload className="h-3.5 w-3.5 text-primary" />
+              <span>{bulkLoading ? `Yüklənir (${bulkProgress.current}/${bulkProgress.total})...` : '📁 Toplu Şəkil Yüklə (Qaralama)'}</span>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleBulkFilesSelect}
+                className="hidden"
+                disabled={bulkLoading}
+              />
+            </label>
             <button type="button" onClick={() => setShowModal(true)}
               className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-black text-black hover:opacity-90 transition-opacity">
               <Plus className="h-3.5 w-3.5" /> Yeni Mehsul
