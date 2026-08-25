@@ -222,11 +222,12 @@ export default function AdminProducts() {
         }
       }
 
-      if (!productName) {
+      if (!productName || productName === "Qarışıq Çiçək Buketi" || productName === "Təravətli Çiçək Buketi") {
         const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim();
-        productName = cleanName.length > 0
+        const baseName = cleanName.length > 0
           ? cleanName.charAt(0).toUpperCase() + cleanName.slice(1)
-          : `Qaralama Buket #${i + 1}`;
+          : (productName || "Buket");
+        productName = `${baseName} #${i + 1}`;
       }
 
       try {
