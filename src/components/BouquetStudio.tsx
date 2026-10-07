@@ -491,12 +491,10 @@ export default function BouquetStudio() {
           setAnalysis(defaultAnalysis);
         }
       } catch (err: any) {
-        console.error("Backend rendering failed:", err);
+        console.warn("Backend rendering fallback:", err);
         
         if (err.response?.status === 403 || err.message?.includes('403') || err.response?.data?.message?.includes('limit')) {
           setShowRenderLimitModal(true);
-        } else {
-          alert("Render zamanı xəta baş verdi.");
         }
         
         setPreloadedImage(hardFallbackImage);

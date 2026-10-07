@@ -1,6 +1,6 @@
-import { CheckCircle2, Loader2, RefreshCw, XCircle } from 'lucide-react';
+import { CheckCircle2, Loader2, RefreshCw, X, XCircle } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { floristService } from '../../services/api';
+import { floristService, normalizeImageUrl } from '../../services/api';
 import { buildCourierInviteLinkToken, normalizePhoneDigits } from '../../utils/courierTrackingToken';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -44,54 +44,6 @@ type CourierHandoverForm = {
   courierWhatsappPhone: string;
   courierCarPlate: string;
   courierCarModel: string;
-};
-
-const API_BASE = String(process.env.NEXT_PUBLIC_API_BASE_URL || '').trim();
-const API_ORIGIN = (() => {
-  if (!API_BASE) return '';
-  try {
-    return new URL(API_BASE, window.location.origin).origin;
-  } catch {
-    return '';
-  }
-})();
-
-const normalizeImageUrl = (value?: string): string => {
-  const raw = String(value || '').trim();
-  if (!raw) return '';
-
-  // backend bəzən slash-ları windows formatında qaytarır
-  const fixed = raw.replace(/\\/g, '/');
-  if (/^data:image\//i.test(fixed)) return fixed;
-  if (/^https?:\/\//i.test(fixed)) return fixed;
-  if (/^\/\//.test(fixed)) return `${window.location.protocol}${fixed}`;
-  if (API_BASE) {
-    try {
-      return new URL(fixed, API_BASE).toString();
-    } catch {
-      // ignore and continue fallback below
-    }
-  }
-  if (API_ORIGIN) {
-    try {
-      return new URL(fixed, API_ORIGIN).toString();
-    } catch {
-      // ignore and continue fallback below
-    }
-  }
-  return fixed;
-};
-
-const readAuthToken = (): string => {
-  const raw =
-    localStorage.getItem('accessToken') ||
-    localStorage.getItem('access_token') ||
-    localStorage.getItem('token') ||
-    sessionStorage.getItem('accessToken') ||
-    sessionStorage.getItem('access_token') ||
-    sessionStorage.getItem('token') ||
-    '';
-  return String(raw).replace(/^"(.*)"$/, '$1').replace(/^Bearer\s+/i, '').trim();
 };
 
 const parseOrder = (row: any): FloristOrder => {
@@ -317,33 +269,15 @@ export default function FloristPanel() {
   const [success, setSuccess] = useState<string | null>(null);
   const [orders, setOrders] = useState<FloristOrder[]>([]);
   const [activeSection, setActiveSection] = useState<'PENDING' | 'PREPARING' | 'READY'>('PENDING');
-  const [imageOpeningUrl, setImageOpeningUrl] = useState<string | null>(null);
   const [viewerImageUrl, setViewerImageUrl] = useState<string | null>(null);
-  const [thumbImageMap, setThumbImageMap] = useState<Record<string, string>>({});
   const [readyProofByOrderId, setReadyProofByOrderId] = useState<Record<number, File | null>>({});
   const [readyProofPreviewByOrderId, setReadyProofPreviewByOrderId] = useState<Record<number, string>>({});
   const [courierFormByOrderId, setCourierFormByOrderId] = useState<Record<number, CourierHandoverForm>>({});
 
-  const openImage = async (imageUrl?: string) => {
+  const openImage = (imageUrl?: string) => {
     const normalized = normalizeImageUrl(imageUrl);
     if (!normalized) return;
-
-    setImageOpeningUrl(normalized);
-    try {
-      const token = readAuthToken();
-      const res = await fetch(normalized, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      });
-      if (!res.ok) throw new Error(`Image fetch failed: ${res.status}`);
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      setViewerImageUrl(objectUrl);
-    } catch {
-      // Fallback for public images.
-      setViewerImageUrl(normalized);
-    } finally {
-      setImageOpeningUrl(null);
-    }
+    setViewerImageUrl(normalized);
   };
 
   const refreshOrders = async () => {
@@ -371,52 +305,6 @@ export default function FloristPanel() {
   useEffect(() => {
     refreshOrders().catch(console.error);
   }, []);
-
-  useEffect(() => {
-    const urls: string[] = Array.from(
-      new Set<string>(
-        orders
-          .flatMap((o) => (Array.isArray(o.items) ? o.items : []))
-          .map((it) => normalizeImageUrl(it.image ?? ''))
-          .filter((s): s is string => s.length > 0)
-      )
-    );
-    if (urls.length === 0) {
-      setThumbImageMap({});
-      return;
-    }
-
-    let cancelled = false;
-    const createdObjectUrls: string[] = [];
-    const token = readAuthToken();
-
-    const loadThumbs = async () => {
-      const nextMap: Record<string, string> = {};
-      await Promise.all(
-        urls.map(async (url) => {
-          try {
-            const res = await fetch(url, {
-              headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-            });
-            if (!res.ok) return;
-            const blob = await res.blob();
-            const objectUrl = URL.createObjectURL(blob);
-            createdObjectUrls.push(objectUrl);
-            nextMap[url] = objectUrl;
-          } catch {
-            // keep original url fallback
-          }
-        })
-      );
-      if (!cancelled) setThumbImageMap(nextMap);
-    };
-
-    loadThumbs().catch(() => undefined);
-    return () => {
-      cancelled = true;
-      createdObjectUrls.forEach((u) => URL.revokeObjectURL(u));
-    };
-  }, [orders]);
 
   const ordered = useMemo(() => {
     return [...orders].sort((a, b) => {
@@ -719,7 +607,6 @@ export default function FloristPanel() {
                       <li key={`${order.id}-${idx}`} className="flex items-center gap-2">
                         {(() => {
                           const normalizedImage = normalizeImageUrl(item.image);
-                          const thumbSrc = thumbImageMap[normalizedImage] || normalizedImage;
                           return item.image ? (
                             <button
                               type="button"
@@ -728,10 +615,13 @@ export default function FloristPanel() {
                               className="shrink-0"
                             >
                               <img
-                                src={thumbSrc}
+                                src={normalizedImage}
                                 alt={item.productName || 'Məhsul'}
-                                className="h-9 w-9 rounded-lg object-cover border border-floral-muted/20 hover:opacity-80 transition"
+                                className="h-9 w-9 rounded-lg object-cover border border-floral-muted/20 hover:opacity-80 transition cursor-pointer"
                                 referrerPolicy="no-referrer"
+                                onError={(e) => {
+                                  (e.currentTarget as HTMLElement).style.display = 'none';
+                                }}
                               />
                             </button>
                           ) : (
@@ -751,10 +641,9 @@ export default function FloristPanel() {
                           <button
                             type="button"
                             onClick={() => openImage(item.image)}
-                            disabled={imageOpeningUrl === normalizeImageUrl(item.image)}
-                            className="text-[10px] font-bold text-primary underline underline-offset-2"
+                            className="text-[10px] font-bold text-primary underline underline-offset-2 hover:opacity-80 transition"
                           >
-                            {imageOpeningUrl === normalizeImageUrl(item.image) ? 'Açılır...' : 'Şəkilə bax'}
+                            Şəkilə bax
                           </button>
                         ) : null}
                       </li>
@@ -951,27 +840,31 @@ export default function FloristPanel() {
 
         {viewerImageUrl ? (
           <div
-            className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/70 p-4"
-            onClick={() => {
-              if (viewerImageUrl.startsWith('blob:')) URL.revokeObjectURL(viewerImageUrl);
-              setViewerImageUrl(null);
-            }}
+            className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setViewerImageUrl(null)}
           >
             <div
-              className="relative max-h-[90vh] w-full max-w-5xl rounded-xl bg-white p-2 shadow-2xl"
+              className="relative max-h-[92vh] max-w-5xl rounded-2xl bg-white p-3 shadow-2xl dark:bg-slate-900 border border-floral-muted/20 flex flex-col items-center overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 type="button"
-                onClick={() => {
-                  if (viewerImageUrl.startsWith('blob:')) URL.revokeObjectURL(viewerImageUrl);
-                  setViewerImageUrl(null);
-                }}
-                className="absolute right-2 top-2 rounded-lg bg-black/70 px-3 py-1 text-xs font-black text-white"
+                onClick={() => setViewerImageUrl(null)}
+                className="absolute right-3 top-3 z-10 rounded-full bg-black/60 p-2 text-white hover:bg-black/85 transition-all shadow-md"
+                title="Bağla"
               >
-                Bağla
+                <X className="h-5 w-5" />
               </button>
-              <img src={viewerImageUrl} alt="Məhsul şəkli" className="max-h-[86vh] w-full rounded-lg object-contain" />
+              <div className="max-h-[84vh] overflow-hidden rounded-xl flex items-center justify-center bg-black/5 dark:bg-black/40 p-1">
+                <img
+                  src={viewerImageUrl}
+                  alt="Məhsul şəkli"
+                  className="max-h-[80vh] w-auto max-w-full rounded-lg object-contain shadow-md"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).alt = 'Şəkil yüklənmədi və ya mövcud deyil';
+                  }}
+                />
+              </div>
             </div>
           </div>
         ) : null}
